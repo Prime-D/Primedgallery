@@ -1,0 +1,570 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Prime-D Gallery</title>
+
+    <link
+        rel="stylesheet"
+        href="../css/style.css"
+    >
+
+    <style>
+
+        /* ========================================
+           CATEGORY PAGE
+        ======================================== */
+
+        .category-page {
+            max-width: 1200px;
+            margin: auto;
+            padding: 30px 20px;
+        }
+
+
+        /* ========================================
+           BACK BUTTON
+        ======================================== */
+
+        .back-button {
+            display: inline-block;
+
+            margin-bottom: 25px;
+
+            padding: 10px 18px;
+
+            border-radius: 8px;
+
+            text-decoration: none;
+
+            background: #222;
+
+            color: white;
+        }
+
+
+        /* ========================================
+           CATEGORY TITLE
+        ======================================== */
+
+        .category-title {
+            text-align: center;
+
+            margin-bottom: 30px;
+        }
+
+
+        /* ========================================
+           GALLERY TITLE
+        ======================================== */
+
+        .gallery-title {
+            margin-top: 35px;
+
+            margin-bottom: 20px;
+        }
+
+
+        /* ========================================
+           PHOTO GRID
+        ======================================== */
+
+        .photo-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    auto-fill,
+                    minmax(220px, 1fr)
+                );
+
+            gap: 15px;
+        }
+
+
+        /* ========================================
+           PHOTO CARD
+        ======================================== */
+
+        .photo-card {
+
+            overflow: hidden;
+
+            border-radius: 12px;
+
+            background: #eee;
+
+            cursor: pointer;
+
+            transition: transform 0.2s ease;
+        }
+
+
+        .photo-card:hover {
+
+            transform: scale(1.02);
+        }
+
+
+        .photo-card img {
+
+            width: 100%;
+
+            height: 250px;
+
+            object-fit: cover;
+
+            display: block;
+        }
+
+
+        /* ========================================
+           VIDEO GRID
+        ======================================== */
+
+        .video-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    auto-fill,
+                    minmax(300px, 1fr)
+                );
+
+            gap: 20px;
+        }
+
+
+        /* ========================================
+           VIDEO CARD
+        ======================================== */
+
+        .video-card {
+
+            background: #000;
+
+            border-radius: 12px;
+
+            overflow: hidden;
+
+            cursor: pointer;
+        }
+
+
+        .video-card video {
+
+            width: 100%;
+
+            display: block;
+        }
+
+
+        /* ========================================
+           LOADING
+        ======================================== */
+
+        .loading {
+
+            text-align: center;
+
+            padding: 50px;
+        }
+
+
+        /* ========================================
+           FULLSCREEN VIEWER
+        ======================================== */
+
+        #mediaViewer {
+
+            position: fixed !important;
+
+            top: 0 !important;
+
+            left: 0 !important;
+
+            width: 100vw !important;
+
+            height: 100vh !important;
+
+            z-index: 999999 !important;
+
+            background: rgba(
+                0,
+                0,
+                0,
+                0.96
+            ) !important;
+
+            display: none;
+
+            align-items: center;
+
+            justify-content: center;
+
+            padding: 20px;
+
+            box-sizing: border-box;
+        }
+
+
+        /* ========================================
+           VIEWER CONTENT
+        ======================================== */
+
+        .viewer-content {
+
+            width: 100%;
+
+            height: 100%;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+        }
+
+
+        /* ========================================
+           VIEWER IMAGE
+        ======================================== */
+
+        .viewer-image {
+
+            max-width: 90vw;
+
+            max-height: 90vh;
+
+            width: auto;
+
+            height: auto;
+
+            object-fit: contain;
+
+            border-radius: 8px;
+
+            display: block;
+        }
+
+
+        /* ========================================
+           VIEWER VIDEO
+        ======================================== */
+
+        .viewer-video {
+
+            max-width: 90vw;
+
+            max-height: 90vh;
+
+            width: auto;
+
+            height: auto;
+
+            background: #000;
+
+            border-radius: 8px;
+
+            display: block;
+        }
+
+
+        /* ========================================
+           CLOSE BUTTON
+        ======================================== */
+
+        .viewer-close {
+
+            position: absolute;
+
+            top: 20px;
+
+            right: 25px;
+
+            z-index: 1000000;
+
+            width: 50px;
+
+            height: 50px;
+
+            border: none;
+
+            border-radius: 50%;
+
+            background: rgba(
+                255,
+                255,
+                255,
+                0.18
+            );
+
+            color: white;
+
+            font-size: 35px;
+
+            line-height: 1;
+
+            cursor: pointer;
+        }
+
+
+        .viewer-close:hover {
+
+            background: rgba(
+                255,
+                255,
+                255,
+                0.35
+            );
+        }
+
+
+        /* ========================================
+           PREVIOUS / NEXT
+        ======================================== */
+
+        .viewer-prev,
+        .viewer-next {
+
+            position: absolute;
+
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            z-index: 1000000;
+
+            width: 55px;
+
+            height: 55px;
+
+            border: none;
+
+            border-radius: 50%;
+
+            background: rgba(
+                255,
+                255,
+                255,
+                0.18
+            );
+
+            color: white;
+
+            font-size: 25px;
+
+            cursor: pointer;
+        }
+
+
+        .viewer-prev:hover,
+        .viewer-next:hover {
+
+            background: rgba(
+                255,
+                255,
+                255,
+                0.35
+            );
+        }
+
+
+        .viewer-prev {
+
+            left: 25px;
+        }
+
+
+        .viewer-next {
+
+            right: 25px;
+        }
+
+
+        /* ========================================
+           MOBILE
+        ======================================== */
+
+        @media (max-width: 600px) {
+
+            .category-page {
+
+                padding: 20px 12px;
+            }
+
+
+            .photo-grid {
+
+                grid-template-columns:
+                    repeat(
+                        2,
+                        1fr
+                    );
+
+                gap: 10px;
+            }
+
+
+            .photo-card img {
+
+                height: 180px;
+            }
+
+
+            .video-grid {
+
+                grid-template-columns:
+                    1fr;
+            }
+
+
+            #mediaViewer {
+
+                padding: 10px;
+            }
+
+
+            .viewer-image,
+            .viewer-video {
+
+                max-width: 96vw;
+
+                max-height: 85vh;
+            }
+
+
+            .viewer-close {
+
+                top: 10px;
+
+                right: 10px;
+
+                width: 45px;
+
+                height: 45px;
+
+                font-size: 30px;
+            }
+
+
+            .viewer-prev,
+            .viewer-next {
+
+                width: 45px;
+
+                height: 45px;
+
+                font-size: 20px;
+            }
+
+
+            .viewer-prev {
+
+                left: 10px;
+            }
+
+
+            .viewer-next {
+
+                right: 10px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <main class="category-page">
+
+        <!-- BACK -->
+
+        <a
+            href="#"
+            id="backButton"
+            class="back-button"
+        >
+            ← Back to Event
+        </a>
+
+
+        <!-- CATEGORY TITLE -->
+
+        <h1
+            id="categoryTitle"
+            class="category-title"
+        >
+            Loading...
+        </h1>
+
+
+        <!-- LOADING -->
+
+        <p
+            id="loadingMessage"
+            class="loading"
+        >
+            Loading photos and videos...
+        </p>
+
+
+        <!-- PHOTOS -->
+
+        <section id="photoSection">
+
+            <h2 class="gallery-title">
+                Photos
+            </h2>
+
+            <div
+                id="photoGallery"
+                class="photo-grid"
+            ></div>
+
+        </section>
+
+
+        <!-- VIDEOS -->
+
+        <section id="videoSection">
+
+            <h2 class="gallery-title">
+                Videos
+            </h2>
+
+            <div
+                id="videoGallery"
+                class="video-grid"
+            ></div>
+
+        </section>
+
+    </main>
+
+
+    <!-- JAVASCRIPT -->
+
+    <script
+        type="module"
+        src="../js/category.js"
+    ></script>
+
+</body>
+
+</html>
+
