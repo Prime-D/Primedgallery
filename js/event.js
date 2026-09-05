@@ -2,13 +2,16 @@ console.log("EVENT.JS LOADED");
 
 import { supabase } from "./supabase.js";
 
+
 // ========================================
 // GET EVENT ID
 // ========================================
 
-const params = new URLSearchParams(window.location.search);
+const params =
+    new URLSearchParams(window.location.search);
 
-const eventId = params.get("id");
+const eventId =
+    params.get("id");
 
 console.log("Event ID:", eventId);
 
@@ -48,9 +51,13 @@ async function loadEvent() {
         data: event,
         error: eventError
     } = await supabase
+
         .from("events")
+
         .select("*")
+
         .eq("id", eventId)
+
         .single();
 
 
@@ -83,7 +90,10 @@ async function loadEvent() {
     // ========================================
 
     const eventName =
-        document.getElementById("eventName");
+        document.getElementById(
+            "eventName"
+        );
+
 
     if (eventName) {
 
@@ -97,14 +107,21 @@ async function loadEvent() {
     // ========================================
     // DESCRIPTION TITLE
     // ========================================
+    // IMPORTANT:
+    // Do NOT put event name here.
+    // This prevents duplicate event name.
+    // ========================================
 
     const descriptionTitle =
-        document.getElementById("descriptionTitle");
+        document.getElementById(
+            "descriptionTitle"
+        );
+
 
     if (descriptionTitle) {
 
         descriptionTitle.textContent =
-            event.event_name || "";
+            "The Story Behind The Event";
 
     }
 
@@ -114,7 +131,10 @@ async function loadEvent() {
     // ========================================
 
     const description =
-        document.getElementById("eventDescription");
+        document.getElementById(
+            "eventDescription"
+        );
+
 
     if (description) {
 
@@ -130,14 +150,20 @@ async function loadEvent() {
     // ========================================
 
     const eventDate =
-        document.getElementById("eventDate");
+        document.getElementById(
+            "eventDate"
+        );
+
 
     if (eventDate) {
 
         if (event.event_date) {
 
             const date =
-                new Date(event.event_date);
+                new Date(
+                    event.event_date
+                );
+
 
             eventDate.textContent =
                 "📅 " +
@@ -165,7 +191,10 @@ async function loadEvent() {
     // ========================================
 
     const eventLocation =
-        document.getElementById("eventLocation");
+        document.getElementById(
+            "eventLocation"
+        );
+
 
     if (eventLocation) {
 
@@ -184,7 +213,10 @@ async function loadEvent() {
     // ========================================
 
     const eventBudget =
-        document.getElementById("eventBudget");
+        document.getElementById(
+            "eventBudget"
+        );
+
 
     if (eventBudget) {
 
@@ -196,12 +228,15 @@ async function loadEvent() {
 
             eventBudget.textContent =
                 "💰 Rs. " +
-                Number(event.budget).toLocaleString(
+                Number(
+                    event.budget
+                ).toLocaleString(
                     "en-LK"
                 );
 
+
             eventBudget.style.display =
-                "inline";
+                "inline-flex";
 
         } else {
 
@@ -217,7 +252,9 @@ async function loadEvent() {
     // LOAD MEDIA
     // ========================================
 
-    await loadMedia(event.id);
+    await loadMedia(
+        event.id
+    );
 
 }
 
@@ -228,7 +265,9 @@ async function loadEvent() {
 
 async function loadMedia(eventId) {
 
-    console.log("Loading media...");
+    console.log(
+        "Loading media..."
+    );
 
 
     // ========================================
@@ -239,9 +278,13 @@ async function loadMedia(eventId) {
         data: categories,
         error: categoryError
     } = await supabase
+
         .from("event_categories")
+
         .select("*")
+
         .eq("event_id", eventId)
+
         .order(
             "created_at",
             {
@@ -275,9 +318,13 @@ async function loadMedia(eventId) {
         data: media,
         error: mediaError
     } = await supabase
+
         .from("event_media")
+
         .select("*")
+
         .eq("event_id", eventId)
+
         .order(
             "created_at",
             {
@@ -303,14 +350,6 @@ async function loadMedia(eventId) {
     );
 
 
-    console.log(
-        "MEDIA TYPES:",
-        media.map(
-            item => item.media_type
-        )
-    );
-
-
     // ========================================
     // GALLERY ELEMENTS
     // ========================================
@@ -319,6 +358,7 @@ async function loadMedia(eventId) {
         document.getElementById(
             "photoGallery"
         );
+
 
     const videoGallery =
         document.getElementById(
@@ -359,7 +399,8 @@ async function loadMedia(eventId) {
     }
 
 
-    categoryContainer.innerHTML = "";
+    categoryContainer.innerHTML =
+        "";
 
 
     // ========================================
@@ -367,12 +408,18 @@ async function loadMedia(eventId) {
     // ========================================
 
     const allButton =
-        document.createElement("button");
+        document.createElement(
+            "button"
+        );
 
-    allButton.type = "button";
+
+    allButton.type =
+        "button";
+
 
     allButton.textContent =
         "All Media";
+
 
     allButton.className =
         "category-button active";
@@ -396,7 +443,8 @@ async function loadMedia(eventId) {
                 );
 
 
-            button.type = "button";
+            button.type =
+                "button";
 
 
             button.textContent =
@@ -421,7 +469,6 @@ async function loadMedia(eventId) {
                     );
 
 
-                    // Remove active
                     document
                         .querySelectorAll(
                             ".category-button"
@@ -437,18 +484,20 @@ async function loadMedia(eventId) {
                         );
 
 
-                    // Add active
                     button.classList.add(
                         "active"
                     );
 
 
-                    // Open category page
                     const categoryUrl =
                         "./category.html?event=" +
-                        encodeURIComponent(eventId) +
+                        encodeURIComponent(
+                            eventId
+                        ) +
                         "&category=" +
-                        encodeURIComponent(category.id);
+                        encodeURIComponent(
+                            category.id
+                        );
 
 
                     window.location.href =
@@ -551,7 +600,8 @@ function displayCategoryMedia(
     // FILTER MEDIA
     // ========================================
 
-    let filteredMedia = media;
+    let filteredMedia =
+        media;
 
 
     if (categoryId) {
@@ -566,24 +616,22 @@ function displayCategoryMedia(
     }
 
 
-    console.log(
-        "Filtered media:",
-        filteredMedia
-    );
-
-
     // ========================================
     // CLEAR GALLERIES
     // ========================================
 
-    photoGallery.innerHTML = "";
+    photoGallery.innerHTML =
+        "";
 
-    videoGallery.innerHTML = "";
+    videoGallery.innerHTML =
+        "";
 
 
-    let photoCount = 0;
+    let photoCount =
+        0;
 
-    let videoCount = 0;
+    let videoCount =
+        0;
 
 
     // ========================================
@@ -664,7 +712,8 @@ function displayCategoryMedia(
             // ========================================
 
             if (
-                item.media_type === "video"
+                item.media_type ===
+                "video"
             ) {
 
                 const video =
@@ -702,7 +751,7 @@ function displayCategoryMedia(
 
 
                 video.style.background =
-                    "#000";
+                    "#eee8de";
 
 
                 video.style.objectFit =
