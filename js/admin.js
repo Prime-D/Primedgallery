@@ -407,68 +407,49 @@ async function loadCategoryMedia(categoryId) {
         });
     });
 }
-// ======================================================
-// HERO PHOTO UPLOAD & MANAGEMENT
-// ======================================================
-const heroPhotoInput = document.getElementById("heroPhotoInput");
-const uploadHeroPhotoBtn = document.getElementById("uploadHeroPhotoBtn");
-const heroPhotoMessage = document.getElementById("heroPhotoMessage");
-const currentHeroPreview = document.getElementById("currentHeroPreview");
-
-// Load Current Hero Photo Preview
-async function loadCurrentHeroPhoto() {
-    if (!currentHeroPreview) return;
-    
-    const { data, error } = await supabase
-        .from("site_settings")
-        .select("value")
-        .eq("key", "hero_image_url")
-        .maybeSingle();
-
-    if (!error && data && data.value) {
-        currentHeroPreview.innerHTML = `
-            <p style="font-weight: 600; margin-bottom: 5px;">Current Hero Background Photo:</p>
-            <img src="${data.value}" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid #ccc; object-fit: cover;">
-        `;
-    } else {
-        currentHeroPreview.innerHTML = `<p style="color: #777; font-size: 14px;">No custom Hero photo set yet.</p>`;
-    }
-}
-loadCurrentHeroPhoto();
-
-// Upload New Hero Photo
-if (uploadHeroPhotoBtn) {
-    uploadHeroPhotoBtn.addEventListener("click", async () => {
-        const file = heroPhotoInput ? heroPhotoInput.files[0] : null;
+// HERO IMAGE UPLOAD WITH AUTOMATIC DB UPSERT
+async function uploadHeroImage(file) {
+    try {
         if (!file) {
-            heroPhotoMessage.textContent = "Please select an image file first.";
+            alert("Please select an image file first.");
             return;
         }
 
-        heroPhotoMessage.textContent = "Uploading new Hero Photo...";
+        const fileExt = file.name.split('.').pop();
+        const fileName = `hero_bg_${Date.now()}.${fileExt}`;
+        const filePath = `hero/${fileName}`;
 
-        try {
-            const filePath = `hero/hero_${Date.now()}_${file.name}`;
-            const { error: uploadErr } = await supabase.storage.from("event-media").upload(filePath, file);
+        // 1. Upload File to Supabase Storage Bucket ('event-media')
+        const { data: uploadData, error: uploadError } = await supabase.storage
+            .from("event-media")
+            .upload(filePath, file, { cacheControl: '0', upsert: true });
 
-            if (uploadErr) throw uploadErr;
+        if (uploadError) throw uploadError;
 
-            const { data: urlData } = supabase.storage.from("event-media").getPublicUrl(filePath);
-            const publicUrl = urlData.publicUrl;
+        // 2. Get Public URL
+        const { data: urlData } = supabase.storage
+            .from("event-media")
+            .getPublicUrl(filePath);
 
-            const { error: dbErr } = await supabase
-                .from("site_settings")
-                .upsert({ key: "hero_image_url", value: publicUrl });
+        const newHeroUrl = urlData.publicUrl;
 
-            if (dbErr) throw dbErr;
+        // 3. Update/Insert to site_settings Table
+        const { error: dbError } = await supabase
+            .from("site_settings")
+            .upsert({ key: "hero_image_url", value: newHeroUrl }, { onConflict: "key" });
 
-            heroPhotoMessage.textContent = "Hero Photo updated successfully! ✅";
-            if (heroPhotoInput) heroPhotoInput.value = "";
-            loadCurrentHeroPhoto();
+        if (dbError) throw dbError;
 
-        } catch (err) {
-            console.error(err);
-            heroPhotoMessage.textContent = "Error updating Hero photo: " + err.message;
+        alert("Hero image updated successfully!");
+
+        // Immediate Preview update
+        const heroSection = document.querySelector(".hero");
+        if (heroSection) {
+            heroSection.style.backgroundImage = `linear-gradient(135deg, rgba(28, 26, 23, 0.88) 25%, rgba(28, 26, 23, 0.50)), url('${newHeroUrl}')`;
         }
-    });
+
+    } catch (err) {
+        console.error("Hero Upload Error:", err);
+        alert("Hero photo upload failed: " + err.message);
+    }
 }

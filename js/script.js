@@ -172,7 +172,7 @@ function formatBudget(amount) {
 
 loadPublishedEvents(currentPage);
 
-// Dynamic Hero Photo Loading
+// Dynamic Hero Photo Loading (Always Fresh Image Fix)
 async function applyDynamicHeroImage() {
     try {
         const heroSection = document.querySelector(".hero");
@@ -184,8 +184,19 @@ async function applyDynamicHeroImage() {
             .eq("key", "hero_image_url")
             .maybeSingle();
 
-        if (!error && data && data.value) {
-            heroSection.style.backgroundImage = `linear-gradient(135deg, rgba(28, 26, 23, 0.88) 25%, rgba(28, 26, 23, 0.50)), url('${data.value}')`;
+        if (error) {
+            console.error("Hero Image Database Error:", error);
+            return;
+        }
+
+        if (data && data.value) {
+            // Preload Image to avoid black background
+            const freshUrl = `${data.value}?v=${Date.now()}`;
+            const img = new Image();
+            img.src = freshUrl;
+            img.onload = () => {
+                heroSection.style.backgroundImage = `linear-gradient(135deg, rgba(28, 26, 23, 0.88) 25%, rgba(28, 26, 23, 0.50)), url('${freshUrl}')`;
+            };
         }
     } catch (err) {
         console.error("Hero Image Load Error:", err);

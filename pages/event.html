@@ -6,6 +6,7 @@
     <title>Event Details | Prime-D</title>
     <link rel="stylesheet" href="../css/style.css">
     <style>
+        /* CSS VARIABLES FOR THEME SWITCHING */
         :root {
             --bg-dark: #121212;
             --card-bg: #1e1e1e;
@@ -13,14 +14,57 @@
             --text-light: #f5f5f5;
             --text-muted: #a0a0a0;
             --border-color: #2a2a2a;
+            --hero-bg: linear-gradient(180deg, #181818 0%, #121212 100%);
+        }
+
+        /* LIGHT THEME OVERRIDES (STRICT OVERRIDE FIX) */
+        body.light-theme {
+            --bg-dark: #f5f0e6 !important;
+            --card-bg: #ffffff !important;
+            --accent-gold: #9e7b32 !important;
+            --text-light: #121110 !important;
+            --text-muted: #615a51 !important;
+            --border-color: #e3dbc9 !important;
+            --hero-bg: linear-gradient(180deg, #eae3d2 0%, #f5f0e6 100%) !important;
         }
 
         body {
-            background-color: var(--bg-dark);
-            color: var(--text-light);
-            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark) !important;
+            color: var(--text-light) !important;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             margin: 0;
             padding: 0;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* LIGHT MODE SPECIFIC TARGETING FIXES */
+        body.light-theme .event-nav {
+            background: rgba(245, 240, 230, 0.95) !important;
+        }
+
+        body.light-theme .event-description-box {
+            background: #ffffff !important;
+            color: #121110 !important;
+            border: 1px solid #e3dbc9 !important;
+            border-left: 4px solid #9e7b32 !important;
+        }
+
+        body.light-theme .media-item-card {
+            background: #ffffff !important;
+            border-color: #e3dbc9 !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        body.light-theme .filter-btn {
+            background: #ffffff !important;
+            color: #121110 !important;
+            border-color: #e3dbc9 !important;
+        }
+
+        body.light-theme .filter-btn.active {
+            background: #9e7b32 !important;
+            color: #ffffff !important;
+            border-color: #9e7b32 !important;
         }
 
         /* HEADER & NAVIGATION */
@@ -29,11 +73,12 @@
             justify-content: space-between;
             align-items: center;
             padding: 20px 8%;
-            background: rgba(18, 18, 18, 0.95);
+            background: var(--bg-dark);
             border-bottom: 1px solid var(--border-color);
             position: sticky;
             top: 0;
             z-index: 100;
+            transition: background 0.3s ease;
         }
 
         .brand-logo {
@@ -44,24 +89,39 @@
             text-decoration: none;
         }
 
-        .nav-links a {
-            color: var(--text-light);
-            text-decoration: none;
-            margin-left: 25px;
-            font-size: 14px;
-            letter-spacing: 1px;
-            transition: color 0.3s;
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
 
-        .nav-links a:hover {
+        /* THEME TOGGLE BUTTON */
+        .theme-toggle-btn {
+            background: var(--card-bg);
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle-btn:hover {
+            border-color: var(--accent-gold);
             color: var(--accent-gold);
         }
 
         /* HERO / HEADER SECTION */
         .event-hero {
             padding: 60px 8% 40px;
-            background: linear-gradient(180deg, #181818 0%, var(--bg-dark) 100%);
+            background: var(--hero-bg);
             border-bottom: 1px solid var(--border-color);
+            transition: background 0.3s ease;
         }
 
         .event-tag {
@@ -78,6 +138,7 @@
             font-weight: 700;
             margin: 0 0 15px 0;
             line-height: 1.2;
+            color: var(--text-light);
         }
 
         .event-meta-info {
@@ -92,12 +153,16 @@
         .event-description-box {
             max-width: 800px;
             line-height: 1.7;
-            color: #d1d1d1;
+            color: var(--text-light);
             font-size: 16px;
             background: var(--card-bg);
             padding: 20px 25px;
             border-radius: 10px;
             border-left: 4px solid var(--accent-gold);
+            border-top: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.3s ease;
         }
 
         /* CATEGORY FILTER TABS */
@@ -125,7 +190,7 @@
 
         .filter-btn:hover, .filter-btn.active {
             background: var(--accent-gold);
-            color: #000;
+            color: #ffffff;
             border-color: var(--accent-gold);
             font-weight: 600;
         }
@@ -151,14 +216,14 @@
             border-radius: 12px;
             overflow: hidden;
             border: 1px solid var(--border-color);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
             position: relative;
             cursor: pointer;
         }
 
         .media-item-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         }
 
         .media-item-card img, .media-item-card video {
@@ -186,48 +251,7 @@
             background: var(--card-bg);
             border-radius: 10px;
             grid-column: 1 / -1;
-        }
-
-        /* LIGHTBOX FULLSCREEN MODAL */
-        .lightbox-modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.92);
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(8px);
-        }
-
-        .lightbox-modal.active {
-            display: flex;
-        }
-
-        .lightbox-content {
-            max-width: 90%;
-            max-height: 85vh;
-            object-fit: contain;
-            border-radius: 8px;
-            box-shadow: 0 0 30px rgba(197, 160, 89, 0.3);
-        }
-
-        .lightbox-close {
-            position: absolute;
-            top: 20px;
-            right: 30px;
-            color: #fff;
-            font-size: 40px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-
-        .lightbox-close:hover {
-            color: var(--accent-gold);
+            border: 1px solid var(--border-color);
         }
 
         /* BUTTON STYLES */
@@ -257,6 +281,7 @@
             text-align: center;
             padding: 20px 20px 80px;
             background: var(--bg-dark);
+            transition: background 0.3s ease;
         }
 
         .bottom-back-btn {
@@ -289,10 +314,15 @@
 </head>
 <body>
 
-    <!-- NAVIGATION WITH BACK TO HOME BUTTON -->
+    <!-- NAVIGATION WITH BACK & THEME TOGGLE BUTTON -->
     <nav class="event-nav">
         <a href="../index.html" class="brand-logo">PRIME-D</a>
-        <div class="nav-links">
+        
+        <div class="nav-actions">
+            <!-- THEME SWITCHER BUTTON -->
+            <button class="theme-toggle-btn" id="themeToggleBtn">
+                <span id="themeIcon">☀️</span> <span id="themeText">Light</span>
+            </button>
             <a href="../index.html" class="back-home-btn">← Back to Home</a>
         </div>
     </nav>
@@ -338,11 +368,37 @@
         </a>
     </div>
 
-    <!-- FULLSCREEN LIGHTBOX MODAL -->
-    <div class="lightbox-modal" id="lightboxModal">
-        <span class="lightbox-close" id="lightboxClose">&times;</span>
-        <img class="lightbox-content" id="lightboxImg" alt="Full Size Image">
-    </div>
+    <!-- RELIABLE THEME TOGGLE SCRIPT -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const themeBtn = document.getElementById("themeToggleBtn");
+            const themeIcon = document.getElementById("themeIcon");
+            const themeText = document.getElementById("themeText");
+
+            // Previous Theme Preference Setup
+            const savedTheme = localStorage.getItem("primed_theme");
+            if (savedTheme === "light") {
+                document.body.classList.add("light-theme");
+                if (themeIcon) themeIcon.textContent = "🌙";
+                if (themeText) themeText.textContent = "Dark";
+            }
+
+            themeBtn?.addEventListener("click", () => {
+                document.body.classList.toggle("light-theme");
+                const isLight = document.body.classList.contains("light-theme");
+
+                if (isLight) {
+                    if (themeIcon) themeIcon.textContent = "🌙";
+                    if (themeText) themeText.textContent = "Dark";
+                    localStorage.setItem("primed_theme", "light");
+                } else {
+                    if (themeIcon) themeIcon.textContent = "☀️";
+                    if (themeText) themeText.textContent = "Light";
+                    localStorage.setItem("primed_theme", "dark");
+                }
+            });
+        });
+    </script>
 
     <script type="module" src="../js/event.js"></script>
 </body>
