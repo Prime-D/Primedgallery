@@ -188,6 +188,48 @@
             grid-column: 1 / -1;
         }
 
+        /* LIGHTBOX FULLSCREEN MODAL */
+        .lightbox-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.92);
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .lightbox-modal.active {
+            display: flex;
+        }
+
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 85vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(197, 160, 89, 0.3);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: #fff;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .lightbox-close:hover {
+            color: var(--accent-gold);
+        }
+
         @media (max-width: 768px) {
             .event-title-main { font-size: 30px; }
             .media-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
@@ -237,6 +279,12 @@
             <div class="empty-gallery-msg">Loading videos...</div>
         </div>
     </main>
+
+    <!-- FULLSCREEN LIGHTBOX MODAL -->
+    <div class="lightbox-modal" id="lightboxModal">
+        <span class="lightbox-close" id="lightboxClose">&times;</span>
+        <img class="lightbox-content" id="lightboxImg" alt="Full Size Image">
+    </div>
 
     <script type="module" src="../js/event.js"></script>
 </body>
