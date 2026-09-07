@@ -18,6 +18,8 @@ const eventStatus = document.getElementById("eventStatus");
 const editEventName = document.getElementById("editEventName");
 const editEventDate = document.getElementById("editEventDate");
 const editLocation = document.getElementById("editLocation");
+const editEventCoverInput = document.getElementById("editEventCoverInput");
+const editCoverPreview = document.getElementById("editCoverPreview");
 const editDescription = document.getElementById("editDescription");
 const editBudget = document.getElementById("editBudget");
 const editShowBudget = document.getElementById("editShowBudget");
@@ -27,6 +29,11 @@ const saveEventBtn = document.getElementById("saveEventBtn");
 const publishEventBtn = document.getElementById("publishEventBtn");
 const unpublishEventBtn = document.getElementById("unpublishEventBtn");
 const deleteEventBtn = document.getElementById("deleteEventBtn");
+
+// Home Hero Photo Elements
+const heroPhotoInput = document.getElementById("heroPhotoInput");
+const uploadHeroPhotoBtn = document.getElementById("uploadHeroPhotoBtn");
+const heroPhotoMessage = document.getElementById("heroPhotoMessage");
 
 // Category Elements
 const categoryNameInput = document.getElementById("categoryName");
@@ -87,7 +94,6 @@ async function loadEventDropdown() {
         eventSelect.appendChild(option);
     });
 
-    // Automatically select the first event if available
     if (events.length > 0) {
         eventSelect.value = events[0].id;
         loadSelectedEventDetails(events[0].id);
@@ -123,6 +129,15 @@ async function loadSelectedEventDetails(eventId) {
     if (editDescription) editDescription.value = evt.description || "";
     if (editBudget) editBudget.value = evt.budget || "";
     if (editShowBudget) editShowBudget.checked = !!evt.show_budget;
+
+    // Cover Image Preview Setup
+    if (editCoverPreview) {
+        if (evt.cover_image_url) {
+            editCoverPreview.innerHTML = `<img src="${evt.cover_image_url}" style="max-height: 120px; border-radius: 6px; border: 1px solid #ddd; margin-top: 5px;">`;
+        } else {
+            editCoverPreview.innerHTML = `<small style="color:#888;">No cover photo set for this event.</small>`;
+        }
+    }
 
     if (eventStatus) eventStatus.textContent = `Status: ${evt.published ? "🟢 Published" : "🔴 Draft"}`;
     if (eventManagementPanel) eventManagementPanel.style.display = "block";
@@ -181,17 +196,42 @@ if (saveEventBtn) {
         if (!currentSelectedEvent) return;
         eventStatus.textContent = "Saving changes...";
 
+        let coverUrl = currentSelectedEvent.cover_image_url || null;
+
+        // Cover Photo Upload Logic
+        if (editEventCoverInput && editEventCoverInput.files.length > 0) {
+            const file = editEventCoverInput.files[0];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `cover_${currentSelectedEvent.id}_${Date.now()}.${fileExt}`;
+            const filePath = `event_covers/${fileName}`;
+
+            const { error: uploadErr } = await supabase.storage
+                .from("event-media")
+                .upload(filePath, file, { cacheControl: '0', upsert: true });
+
+            if (!uploadErr) {
+                const { data: urlData } = supabase.storage
+                    .from("event-media")
+                    .getPublicUrl(filePath);
+                coverUrl = urlData.publicUrl;
+            } else {
+                console.error("Cover Upload Error:", uploadErr);
+            }
+        }
+
         const { error } = await supabase.from("events").update({
             event_name: editEventName.value,
             event_date: editEventDate.value,
             location: editLocation.value,
             description: editDescription.value,
             budget: editBudget.value ? parseFloat(editBudget.value) : null,
-            show_budget: editShowBudget.checked
+            show_budget: editShowBudget.checked,
+            cover_image_url: coverUrl
         }).eq("id", currentSelectedEvent.id);
 
         if (!error) {
             eventStatus.textContent = "Changes saved! ✅";
+            if (editEventCoverInput) editEventCoverInput.value = "";
             loadEventDropdown();
         } else {
             eventStatus.textContent = "Error: " + error.message;
@@ -233,6 +273,52 @@ if (deleteEventBtn) {
             alert("Event deleted successfully!");
             eventManagementPanel.style.display = "none";
             loadEventDropdown();
+        }
+    });
+}
+
+// ======================================================
+// HOME HERO PHOTO MANAGEMENT
+// ======================================================
+if (uploadHeroPhotoBtn) {
+    uploadHeroPhotoBtn.addEventListener("click", async () => {
+        const file = heroPhotoInput ? heroPhotoInput.files[0] : null;
+        if (!file) {
+            if (heroPhotoMessage) heroPhotoMessage.textContent = "Please select an image file first.";
+            return;
+        }
+
+        if (heroPhotoMessage) heroPhotoMessage.textContent = "Uploading hero photo...";
+
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `hero_bg_${Date.now()}.${fileExt}`;
+            const filePath = `hero/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from("event-media")
+                .upload(filePath, file, { cacheControl: '0', upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            const { data: urlData } = supabase.storage
+                .from("event-media")
+                .getPublicUrl(filePath);
+
+            const newHeroUrl = urlData.publicUrl;
+
+            const { error: dbError } = await supabase
+                .from("site_settings")
+                .upsert({ key: "hero_image_url", value: newHeroUrl }, { onConflict: "key" });
+
+            if (dbError) throw dbError;
+
+            if (heroPhotoMessage) heroPhotoMessage.textContent = "Hero photo updated successfully! ✅";
+            if (heroPhotoInput) heroPhotoInput.value = "";
+
+        } catch (err) {
+            console.error("Hero Upload Error:", err);
+            if (heroPhotoMessage) heroPhotoMessage.textContent = "Hero photo upload failed: " + err.message;
         }
     });
 }
@@ -406,50 +492,4 @@ async function loadCategoryMedia(categoryId) {
             }
         });
     });
-}
-// HERO IMAGE UPLOAD WITH AUTOMATIC DB UPSERT
-async function uploadHeroImage(file) {
-    try {
-        if (!file) {
-            alert("Please select an image file first.");
-            return;
-        }
-
-        const fileExt = file.name.split('.').pop();
-        const fileName = `hero_bg_${Date.now()}.${fileExt}`;
-        const filePath = `hero/${fileName}`;
-
-        // 1. Upload File to Supabase Storage Bucket ('event-media')
-        const { data: uploadData, error: uploadError } = await supabase.storage
-            .from("event-media")
-            .upload(filePath, file, { cacheControl: '0', upsert: true });
-
-        if (uploadError) throw uploadError;
-
-        // 2. Get Public URL
-        const { data: urlData } = supabase.storage
-            .from("event-media")
-            .getPublicUrl(filePath);
-
-        const newHeroUrl = urlData.publicUrl;
-
-        // 3. Update/Insert to site_settings Table
-        const { error: dbError } = await supabase
-            .from("site_settings")
-            .upsert({ key: "hero_image_url", value: newHeroUrl }, { onConflict: "key" });
-
-        if (dbError) throw dbError;
-
-        alert("Hero image updated successfully!");
-
-        // Immediate Preview update
-        const heroSection = document.querySelector(".hero");
-        if (heroSection) {
-            heroSection.style.backgroundImage = `linear-gradient(135deg, rgba(28, 26, 23, 0.88) 25%, rgba(28, 26, 23, 0.50)), url('${newHeroUrl}')`;
-        }
-
-    } catch (err) {
-        console.error("Hero Upload Error:", err);
-        alert("Hero photo upload failed: " + err.message);
-    }
 }

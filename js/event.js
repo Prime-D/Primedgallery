@@ -17,14 +17,25 @@ const videosGrid = document.getElementById("videosGrid");
 let allMediaItems = [];
 
 /* ======================================================
+   HERO BACKGROUND HELPER (PREVENTS IMAGE REPEATING)
+   ====================================================== */
+function applyHeroBackground(imageUrl) {
+    const heroSection = document.querySelector(".event-hero");
+    if (heroSection && imageUrl) {
+        heroSection.style.backgroundImage = `url('${imageUrl}')`;
+        heroSection.style.backgroundRepeat = "no-repeat";
+        heroSection.style.backgroundSize = "cover";
+        heroSection.style.backgroundPosition = "center center";
+    }
+}
+
+/* ======================================================
    LIGHTBOX FULLSCREEN FIX (INDEPENDENT OVERLAY)
    ====================================================== */
 function openLightbox(imageUrl) {
-    // කලින් තිබූ Modal එකක් ඇත්නම් ඉවත් කිරීම
     const existingModal = document.getElementById("primeLightboxModal");
     if (existingModal) existingModal.remove();
 
-    // 1. Full Screen Dark Overlay එක සාදා ගැනීම
     const overlay = document.createElement("div");
     overlay.id = "primeLightboxModal";
     overlay.style.cssText = `
@@ -43,7 +54,6 @@ function openLightbox(imageUrl) {
         box-sizing: border-box;
     `;
 
-    // 2. Close Button එක (Top Right)
     const closeBtn = document.createElement("span");
     closeBtn.innerHTML = "&times;";
     closeBtn.style.cssText = `
@@ -60,7 +70,6 @@ function openLightbox(imageUrl) {
         transition: color 0.2s ease;
     `;
 
-    // 3. Full Size Image Element එක
     const img = document.createElement("img");
     img.src = imageUrl;
     img.style.cssText = `
@@ -75,16 +84,13 @@ function openLightbox(imageUrl) {
     overlay.appendChild(img);
     document.body.appendChild(overlay);
 
-    // Body Scroll වීම නතර කිරීම
     document.body.style.overflow = "hidden";
 
-    // Close Function එක
     const closeLightbox = () => {
         overlay.remove();
         document.body.style.overflow = "auto";
     };
 
-    // Events
     closeBtn.onclick = (e) => {
         e.stopPropagation();
         closeLightbox();
@@ -137,6 +143,11 @@ async function initEventDetails() {
         eventBudget.textContent = "💰 Rs. " + Number(event.budget).toLocaleString("en-LK");
     }
 
+    // EVENT HERO BACKGROUND SETTER (WITH NO-REPEAT ENFORCED)
+    if (event.cover_image_url) {
+        applyHeroBackground(event.cover_image_url);
+    }
+
     loadEventCategories(eventId);
     loadEventMedia(eventId);
 }
@@ -182,6 +193,16 @@ async function loadEventMedia(eventId) {
     }
 
     allMediaItems = media;
+
+    // Cover Image එකක් සකසා නැති විට Gallery එකේ පළමු Photo එක Hero Background එක ලෙස Auto-Apply කිරීම
+    const heroSection = document.querySelector(".event-hero");
+    if (heroSection && !heroSection.style.backgroundImage && allMediaItems.length > 0) {
+        const firstPhoto = allMediaItems.find(m => m.media_type === "photo" || m.media_type === "image");
+        if (firstPhoto) {
+            applyHeroBackground(firstPhoto.file_url);
+        }
+    }
+
     renderMediaByCategory("all");
 }
 
@@ -196,7 +217,7 @@ function renderMediaByCategory(categoryId) {
     const photos = filtered.filter(m => m.media_type === "photo" || m.media_type === "image");
     const videos = filtered.filter(m => m.media_type === "video");
 
-    // Render Photos with Direct Lightbox Trigger
+    // Render Photos
     if (photos.length === 0) {
         if (photosGrid) photosGrid.innerHTML = `<div class="empty-gallery-msg">No photos available for this category.</div>`;
     } else {
@@ -206,7 +227,6 @@ function renderMediaByCategory(categoryId) {
             card.style.cursor = "pointer";
             card.innerHTML = `<img src="${item.file_url}" alt="Event Photo" loading="lazy">`;
 
-            // Card Click -> Open Full Size Image
             card.addEventListener("click", (e) => {
                 e.preventDefault();
                 e.stopPropagation();

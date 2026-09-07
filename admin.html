@@ -2,23 +2,12 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prime-D Admin Dashboard</title>
-
-    <link
-        rel="stylesheet"
-        href="../css/style.css"
-    >
+    <link rel="stylesheet" href="../css/style.css">
 
     <style>
-
         body {
             background: #f5f5f5;
             color: #222;
@@ -202,7 +191,6 @@
         }
 
         @media (max-width: 700px) {
-
             .media-upload-grid {
                 grid-template-columns: 1fr;
             }
@@ -217,37 +205,21 @@
                 flex-direction: column;
                 align-items: flex-start;
             }
-
         }
-
     </style>
-
 </head>
-
 
 <body>
 
 <main class="admin-container">
 
-
     <!-- HEADER -->
-
     <div class="admin-header">
-
-        <h1>
-            Prime-D Admin Dashboard
-        </h1>
-
-        <button
-            type="button"
-            id="logoutBtn"
-            class="secondary-button"
-        >
-            Logout
-        </button>
-
+        <h1>Prime-D Admin Dashboard</h1>
+        <button type="button" id="logoutBtn" class="secondary-button">Logout</button>
     </div>
-<!-- HERO PHOTO MANAGEMENT SECTION -->
+
+    <!-- HOME HERO PHOTO MANAGEMENT SECTION -->
     <section class="admin-section">
         <h2>Change Home Page Hero Photo</h2>
         <div class="form-group">
@@ -260,463 +232,176 @@
     </section>
 
     <!-- 1. CREATE NEW EVENT -->
-
     <section class="admin-section">
-
-        <h2>
-            01. Create New Event
-        </h2>
+        <h2>01. Create New Event</h2>
 
         <form id="eventForm">
-
             <div class="form-group">
-
-                <label for="eventName">
-                    Event Name
-                </label>
-
-                <input
-                    type="text"
-                    id="eventName"
-                    required
-                >
-
+                <label for="eventName">Event Name</label>
+                <input type="text" id="eventName" required>
             </div>
 
-
             <div class="form-group">
-
-                <label for="eventDate">
-                    Event Date
-                </label>
-
-                <input
-                    type="date"
-                    id="eventDate"
-                    required
-                >
-
+                <label for="eventDate">Event Date</label>
+                <input type="date" id="eventDate" required>
             </div>
 
-
             <div class="form-group">
-
-                <label for="location">
-                    Location
-                </label>
-
-                <input
-                    type="text"
-                    id="location"
-                    required
-                >
-
+                <label for="location">Location</label>
+                <input type="text" id="location" required>
             </div>
 
-
             <div class="form-group">
-
-                <label for="description">
-                    Description
-                </label>
-
-                <textarea
-                    id="description"
-                ></textarea>
-
+                <label for="description">Description</label>
+                <textarea id="description"></textarea>
             </div>
 
-
             <div class="form-group">
-
-                <label for="budget">
-                    Budget
-                </label>
-
-                <input
-                    type="number"
-                    id="budget"
-                    min="0"
-                >
-
+                <label for="budget">Budget</label>
+                <input type="number" id="budget" min="0">
             </div>
 
-
             <div class="form-group">
-
                 <label>
-
-                    <input
-                        type="checkbox"
-                        id="showBudget"
-                    >
-
+                    <input type="checkbox" id="showBudget">
                     Show Budget to Public
-
                 </label>
-
             </div>
 
-
-            <button
-                type="submit"
-                class="primary-button"
-            >
-                Create Event
-            </button>
-
-
-            <div
-                id="message"
-                class="message"
-            ></div>
-
+            <button type="submit" class="primary-button">Create Event</button>
+            <div id="message" class="message"></div>
         </form>
-
     </section>
-
 
     <!-- 2. SELECT EVENT -->
-
     <section class="admin-section">
-
-        <h2>
-            02. Select Event to Manage
-        </h2>
+        <h2>02. Select Event to Manage</h2>
 
         <div class="form-group">
-
-            <label for="eventSelect">
-                Select Event
-            </label>
-
+            <label for="eventSelect">Select Event</label>
             <select id="eventSelect">
-
-                <option value="">
-                    -- Loading Events... --
-                </option>
-
+                <option value="">-- Loading Events... --</option>
             </select>
-
         </div>
-
     </section>
 
-
-    <!-- 3. MANAGE SELECTED EVENT -->
-
+    <!-- 3. MANAGE SELECTED EVENT (EVENT HERO COVER PHOTO ADDED HERE) -->
     <section class="admin-section">
+        <h2>03. Manage Selected Event Details</h2>
 
-        <h2>
-            03. Manage Selected Event Details
-        </h2>
-
-        <div
-            id="eventManagementMessage"
-            class="message"
-        ></div>
+        <div id="eventManagementMessage" class="message"></div>
 
         <div id="eventManagementPanel">
-
             <div class="form-group">
-
-                <label for="editEventName">
-                    Event Name
-                </label>
-
-                <input
-                    type="text"
-                    id="editEventName"
-                >
-
+                <label for="editEventName">Event Name</label>
+                <input type="text" id="editEventName">
             </div>
 
             <div class="form-group">
-
-                <label for="editEventDate">
-                    Event Date
-                </label>
-
-                <input
-                    type="date"
-                    id="editEventDate"
-                >
-
+                <label for="editEventDate">Event Date</label>
+                <input type="date" id="editEventDate">
             </div>
 
             <div class="form-group">
+                <label for="editLocation">Location</label>
+                <input type="text" id="editLocation">
+            </div>
 
-                <label for="editLocation">
-                    Location
+            <!-- EVENT SPECIFIC HERO COVER PHOTO UPLOAD INPUT -->
+            <div class="form-group" style="background: #fafafa; padding: 15px; border: 1px dashed #ccc; border-radius: 8px;">
+                <label for="editEventCoverInput" style="color: #111; font-weight: 700;">
+                    🖼️ Event Cover / Header Photo (Optional)
                 </label>
-
-                <input
-                    type="text"
-                    id="editLocation"
-                >
-
+                <input type="file" id="editEventCoverInput" accept="image/*">
+                <small style="color: #666; display: block; margin-top: 5px;">
+                    This photo will appear behind the event title on the View Event page.
+                </small>
+                <div id="editCoverPreview" style="margin-top: 10px;"></div>
             </div>
 
             <div class="form-group">
-
-                <label for="editDescription">
-                    Description
-                </label>
-
-                <textarea
-                    id="editDescription"
-                ></textarea>
-
+                <label for="editDescription">Description</label>
+                <textarea id="editDescription"></textarea>
             </div>
 
             <div class="form-group">
-
-                <label for="editBudget">
-                    Budget
-                </label>
-
-                <input
-                    type="number"
-                    id="editBudget"
-                    min="0"
-                >
-
+                <label for="editBudget">Budget</label>
+                <input type="number" id="editBudget" min="0">
             </div>
 
             <div class="form-group">
-
                 <label>
-
-                    <input
-                        type="checkbox"
-                        id="editShowBudget"
-                    >
-
+                    <input type="checkbox" id="editShowBudget">
                     Show Budget to Public
-
                 </label>
-
             </div>
 
-            <div
-                style="
-                    display:flex;
-                    flex-wrap:wrap;
-                    gap:10px;
-                    margin-top:15px;
-                "
-            >
-
-                <button
-                    type="button"
-                    id="saveEventBtn"
-                    class="primary-button"
-                >
-                    💾 Save Changes
-                </button>
-
-                <button
-                    type="button"
-                    id="publishEventBtn"
-                    class="primary-button"
-                >
-                    🟢 Publish Event
-                </button>
-
-                <button
-                    type="button"
-                    id="unpublishEventBtn"
-                    class="secondary-button"
-                >
-                    🔴 Unpublish (Draft)
-                </button>
-
-                <button
-                    type="button"
-                    id="deleteEventBtn"
-                    class="danger-button"
-                >
-                    🗑️ Delete Event
-                </button>
-
+            <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:15px;">
+                <button type="button" id="saveEventBtn" class="primary-button">💾 Save Changes</button>
+                <button type="button" id="publishEventBtn" class="primary-button">🟢 Publish Event</button>
+                <button type="button" id="unpublishEventBtn" class="secondary-button">🔴 Unpublish (Draft)</button>
+                <button type="button" id="deleteEventBtn" class="danger-button">🗑️ Delete Event</button>
             </div>
 
-            <div
-                id="eventStatus"
-                class="message"
-            ></div>
-
+            <div id="eventStatus" class="message"></div>
         </div>
-
     </section>
-
 
     <!-- 4. CATEGORY MANAGEMENT -->
-
     <section class="admin-section">
-
-        <h2>
-            04. Manage Categories
-        </h2>
+        <h2>04. Manage Categories</h2>
 
         <div class="form-group">
-
-            <label for="categoryName">
-                Category Name
-            </label>
-
-            <input
-                type="text"
-                id="categoryName"
-                placeholder="Example: Wedding Ceremony"
-            >
-
+            <label for="categoryName">Category Name</label>
+            <input type="text" id="categoryName" placeholder="Example: Wedding Ceremony">
         </div>
 
-        <button
-            type="button"
-            id="addCategoryBtn"
-            class="primary-button"
-        >
-            + Add Category
-        </button>
-
-        <div
-            id="categoryMessage"
-            class="message"
-        ></div>
-
-        <div
-            id="categoryList"
-            class="category-list"
-        ></div>
-
+        <button type="button" id="addCategoryBtn" class="primary-button">+ Add Category</button>
+        <div id="categoryMessage" class="message"></div>
+        <div id="categoryList" class="category-list"></div>
     </section>
 
-
     <!-- 5. CATEGORY MEDIA UPLOAD -->
-
     <section class="admin-section">
-
-        <h2>
-            05. Upload Category Media
-        </h2>
+        <h2>05. Upload Category Media</h2>
 
         <div class="form-group">
-
-            <label for="categorySelect">
-                Select Category
-            </label>
-
+            <label for="categorySelect">Select Category</label>
             <select id="categorySelect">
-
-                <option value="">
-                    -- Select Category --
-                </option>
-
+                <option value="">-- Select Category --</option>
             </select>
-
         </div>
 
         <div class="media-upload-grid">
-
-            <!-- PHOTOS -->
-
             <div class="media-box">
-
-                <label for="categoryPhotos">
-                    Photos
-                </label>
-
-                <input
-                    type="file"
-                    id="categoryPhotos"
-                    accept="image/*"
-                    multiple
-                >
-
-                <small>
-                    You can select multiple photos.
-                </small>
-
+                <label for="categoryPhotos">Photos</label>
+                <input type="file" id="categoryPhotos" accept="image/*" multiple>
+                <small>You can select multiple photos.</small>
             </div>
 
-            <!-- VIDEOS -->
-
             <div class="media-box">
-
-                <label for="categoryVideos">
-                    Videos
-                </label>
-
-                <input
-                    type="file"
-                    id="categoryVideos"
-                    accept="video/*"
-                    multiple
-                >
-
-                <small>
-                    You can select multiple videos.
-                </small>
-
+                <label for="categoryVideos">Videos</label>
+                <input type="file" id="categoryVideos" accept="video/*" multiple>
+                <small>You can select multiple videos.</small>
             </div>
-
         </div>
-
         <br>
 
-        <button
-            type="button"
-            id="uploadCategoryMediaBtn"
-            class="primary-button"
-        >
-            Upload Media
-        </button>
-
-        <div
-            id="categoryUploadMessage"
-            class="message"
-        ></div>
-
+        <button type="button" id="uploadCategoryMediaBtn" class="primary-button">Upload Media</button>
+        <div id="categoryUploadMessage" class="message"></div>
     </section>
-
 
     <!-- 6. MANAGE CATEGORY MEDIA -->
-
     <section class="admin-section">
-
-        <h2>
-            06. Manage Category Media
-        </h2>
-
-        <p>
-            Select a category above to view and manage uploaded photos and videos.
-        </p>
-
-        <div
-            id="categoryMediaMessage"
-            class="message"
-        ></div>
-
-        <div
-            id="categoryMediaList"
-            class="category-media-admin-list"
-        ></div>
-
+        <h2>06. Manage Category Media</h2>
+        <p>Select a category above to view and manage uploaded photos and videos.</p>
+        <div id="categoryMediaMessage" class="message"></div>
+        <div id="categoryMediaList" class="category-media-admin-list"></div>
     </section>
-
 
 </main>
 
-
-<!-- JAVASCRIPT -->
-
-<script
-    type="module"
-    src="../js/admin.js"
-></script>
+<script type="module" src="../js/admin.js"></script>
 
 </body>
-
 </html>
