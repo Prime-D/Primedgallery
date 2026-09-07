@@ -96,20 +96,15 @@ img, video, iframe {
     color: var(--gold);
 }
 
-/* HERO */
+/* HERO (PREVENT IMAGE FLASH ISSUE) */
 .hero {
     min-height: 700px;
     padding: 100px 8%;
     display: flex;
     align-items: center;
     position: relative;
-    background:
-        linear-gradient(
-            135deg,
-            rgba(28, 26, 23, 0.88) 25%,
-            rgba(28, 26, 23, 0.50)
-        ),
-        url("https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?q=80&w=2070&auto=format&fit=crop");
+    /* Static Unsplash Image ඉවත් කර ඇත - JS මගින් Uploaded Image එක dynamic load වන තෙක් Solid Dark Background එකක් පවතී */
+    background: var(--bg);
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -420,8 +415,30 @@ footer {
 }
 
 /* =========================================================
-   ADDITIONAL COMPONENT STYLES (PAGINATION & BACK BUTTONS)
+   ADDITIONAL COMPONENT STYLES (BUTTONS & NAV)
    ========================================================= */
+
+/* THEME TOGGLE BUTTON FIX */
+.theme-toggle-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    background: #1e1e1e !important;
+    color: #ffffff !important;
+    border: 1px solid var(--gold) !important;
+    padding: 8px 16px !important;
+    border-radius: 20px !important;
+    cursor: pointer !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle-btn:hover {
+    background: var(--gold) !important;
+    color: var(--text-dark) !important;
+}
 
 /* BACK TO HOME BUTTONS */
 .back-home-btn {
@@ -436,6 +453,7 @@ footer {
     letter-spacing: 1px;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+    white-space: nowrap;
 }
 
 .back-home-btn:hover {

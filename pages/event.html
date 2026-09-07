@@ -6,7 +6,7 @@
     <title>Event Details | Prime-D</title>
     <link rel="stylesheet" href="../css/style.css">
     <style>
-        /* CSS VARIABLES FOR THEME SWITCHING */
+        /* BASE CSS VARIABLES */
         :root {
             --bg-dark: #121212;
             --card-bg: #1e1e1e;
@@ -17,7 +17,7 @@
             --hero-bg: linear-gradient(180deg, #181818 0%, #121212 100%);
         }
 
-        /* LIGHT THEME OVERRIDES (STRICT OVERRIDE FIX) */
+        /* LIGHT THEME OVERRIDES */
         body.light-theme {
             --bg-dark: #f5f0e6 !important;
             --card-bg: #ffffff !important;
@@ -31,13 +31,13 @@
         body {
             background-color: var(--bg-dark) !important;
             color: var(--text-light) !important;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Plus Jakarta Sans', Arial, sans-serif;
             margin: 0;
             padding: 0;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* LIGHT MODE SPECIFIC TARGETING FIXES */
+        /* LIGHT MODE TARGETING FIXES */
         body.light-theme .event-nav {
             background: rgba(245, 240, 230, 0.95) !important;
         }
@@ -69,15 +69,15 @@
 
         /* HEADER & NAVIGATION */
         .event-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 8%;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 15px 8% !important;
             background: var(--bg-dark);
             border-bottom: 1px solid var(--border-color);
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
             transition: background 0.3s ease;
         }
 
@@ -90,33 +90,35 @@
         }
 
         .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
         }
 
-        /* THEME TOGGLE BUTTON */
+        /* ALWAYS VISIBLE THEME TOGGLE BUTTON */
         .theme-toggle-btn {
-            background: var(--card-bg);
-            color: var(--text-light);
-            border: 1px solid var(--border-color);
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 6px !important;
+            background: var(--card-bg) !important;
+            color: var(--text-light) !important;
+            border: 1px solid var(--accent-gold) !important;
+            padding: 8px 16px !important;
+            border-radius: 20px !important;
+            cursor: pointer !important;
+            font-size: 13px !important;
+            font-weight: 600 !important;
+            z-index: 1001 !important;
             transition: all 0.3s ease;
         }
 
         .theme-toggle-btn:hover {
-            border-color: var(--accent-gold);
-            color: var(--accent-gold);
+            background: var(--accent-gold) !important;
+            color: #121110 !important;
         }
 
-        /* HERO / HEADER SECTION */
+        /* HERO SECTION */
         .event-hero {
             padding: 60px 8% 40px;
             background: var(--hero-bg);
@@ -267,6 +269,7 @@
             letter-spacing: 1px;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(197, 160, 89, 0.2);
+            white-space: nowrap;
         }
 
         .back-home-btn:hover {
@@ -309,25 +312,28 @@
         @media (max-width: 768px) {
             .event-title-main { font-size: 30px; }
             .media-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+            .event-nav { padding: 12px 15px !important; }
+            .theme-toggle-btn { padding: 6px 12px !important; font-size: 12px !important; }
+            .back-home-btn { padding: 6px 12px !important; font-size: 11px !important; }
         }
     </style>
 </head>
 <body>
 
     <!-- NAVIGATION WITH BACK & THEME TOGGLE BUTTON -->
-    <nav class="event-nav">
+    <nav class="event-nav" id="eventNav">
         <a href="../index.html" class="brand-logo">PRIME-D</a>
         
         <div class="nav-actions">
             <!-- THEME SWITCHER BUTTON -->
-            <button class="theme-toggle-btn" id="themeToggleBtn">
+            <button type="button" class="theme-toggle-btn" id="themeToggleBtn">
                 <span id="themeIcon">☀️</span> <span id="themeText">Light</span>
             </button>
             <a href="../index.html" class="back-home-btn">← Back to Home</a>
         </div>
     </nav>
 
-    <header class="event-hero">
+    <header class="event-hero" id="eventHero">
         <div class="event-tag">PRIME-D EXCLUSIVE EVENT</div>
         <h1 class="event-title-main" id="eventTitle">Loading Event...</h1>
         
@@ -368,7 +374,7 @@
         </a>
     </div>
 
-    <!-- RELIABLE THEME TOGGLE SCRIPT -->
+    <!-- THEME TOGGLE SCRIPT -->
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             const themeBtn = document.getElementById("themeToggleBtn");
