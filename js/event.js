@@ -16,96 +16,105 @@ const videosGrid = document.getElementById("videosGrid");
 
 let allMediaItems = [];
 
-// LIGHTBOX (FULL-SCREEN PHOTO) DYNAMIC CREATION & SETUP
-function setupLightboxModal() {
-    if (document.getElementById("lightboxModal")) return;
+/* ======================================================
+   LIGHTBOX FULLSCREEN FIX (INDEPENDENT OVERLAY)
+   ====================================================== */
+function openLightbox(imageUrl) {
+    // කලින් තිබූ Modal එකක් ඇත්නම් ඉවත් කිරීම
+    const existingModal = document.getElementById("primeLightboxModal");
+    if (existingModal) existingModal.remove();
 
-    const modal = document.createElement("div");
-    modal.id = "lightboxModal";
-    modal.style.cssText = `
-        display: none;
-        position: fixed;
-        z-index: 10000;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.93);
-        justify-content: center;
-        align-items: center;
+    // 1. Full Screen Dark Overlay එක සාදා ගැනීම
+    const overlay = document.createElement("div");
+    overlay.id = "primeLightboxModal";
+    overlay.style.cssText = `
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background-color: rgba(0, 0, 0, 0.95) !important;
+        z-index: 999999 !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
         backdrop-filter: blur(8px);
-        cursor: pointer;
+        padding: 20px;
+        box-sizing: border-box;
     `;
 
+    // 2. Close Button එක (Top Right)
     const closeBtn = document.createElement("span");
     closeBtn.innerHTML = "&times;";
     closeBtn.style.cssText = `
-        position: absolute;
-        top: 20px;
-        right: 30px;
-        color: #ffffff;
-        font-size: 45px;
-        font-weight: bold;
-        cursor: pointer;
+        position: absolute !important;
+        top: 15px !important;
+        right: 25px !important;
+        color: #ffffff !important;
+        font-size: 50px !important;
+        font-weight: bold !important;
+        cursor: pointer !important;
+        line-height: 1 !important;
+        z-index: 1000000 !important;
         user-select: none;
-        transition: color 0.3s;
-    `;
-    closeBtn.onmouseover = () => closeBtn.style.color = "#d4af37";
-    closeBtn.onmouseout = () => closeBtn.style.color = "#ffffff";
-
-    const modalImg = document.createElement("img");
-    modalImg.id = "lightboxImg";
-    modalImg.alt = "Prime-D Event Full Resolution";
-    modalImg.style.cssText = `
-        max-width: 90%;
-        max-height: 88vh;
-        object-fit: contain;
-        border-radius: 6px;
-        box-shadow: 0 0 35px rgba(212, 175, 55, 0.25);
-        cursor: default;
+        transition: color 0.2s ease;
     `;
 
-    modal.appendChild(closeBtn);
-    modal.appendChild(modalImg);
-    document.body.appendChild(modal);
+    // 3. Full Size Image Element එක
+    const img = document.createElement("img");
+    img.src = imageUrl;
+    img.style.cssText = `
+        max-width: 95vw !important;
+        max-height: 90vh !important;
+        object-fit: contain !important;
+        border-radius: 4px;
+        box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+    `;
 
-    const closeModal = () => {
-        modal.style.display = "none";
-        modalImg.src = "";
+    overlay.appendChild(closeBtn);
+    overlay.appendChild(img);
+    document.body.appendChild(overlay);
+
+    // Body Scroll වීම නතර කිරීම
+    document.body.style.overflow = "hidden";
+
+    // Close Function එක
+    const closeLightbox = () => {
+        overlay.remove();
+        document.body.style.overflow = "auto";
     };
 
-    closeBtn.addEventListener("click", closeModal);
-    modal.addEventListener("click", (e) => {
-        if (e.target === modal) closeModal();
-    });
+    // Events
+    closeBtn.onclick = (e) => {
+        e.stopPropagation();
+        closeLightbox();
+    };
 
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && modal.style.display === "flex") {
-            closeModal();
+    overlay.onclick = (e) => {
+        if (e.target !== img) {
+            closeLightbox();
         }
-    });
+    };
+
+    const handleEsc = (e) => {
+        if (e.key === "Escape") {
+            closeLightbox();
+            document.removeEventListener("keydown", handleEsc);
+        }
+    };
+    document.addEventListener("keydown", handleEsc);
 }
 
-function openLightbox(imageUrl) {
-    setupLightboxModal();
-    const modal = document.getElementById("lightboxModal");
-    const modalImg = document.getElementById("lightboxImg");
-
-    if (modal && modalImg) {
-        modalImg.src = imageUrl;
-        modal.style.display = "flex";
-    }
-}
-
+/* ======================================================
+   INIT EVENT DETAILS
+   ====================================================== */
 async function initEventDetails() {
-    setupLightboxModal();
-
     if (!eventId) {
-        eventTitle.textContent = "Event Not Found";
+        if (eventTitle) eventTitle.textContent = "Event Not Found";
         return;
     }
 
-    // 1. Fetch Event Info
+    // Fetch Event Info
     const { data: event, error } = await supabase
         .from("events")
         .select("*")
@@ -113,25 +122,22 @@ async function initEventDetails() {
         .single();
 
     if (error || !event) {
-        eventTitle.textContent = "Unable to load event details.";
+        if (eventTitle) eventTitle.textContent = "Unable to load event details.";
         return;
     }
 
     // Populate Event Meta
-    eventTitle.textContent = event.event_name || "Untitled Event";
-    eventDate.textContent = event.event_date ? "📅 " + formatDate(event.event_date) : "📅 Date unavailable";
-    eventLocation.textContent = event.location ? "📍 " + event.location : "📍 Location unavailable";
-    eventDescription.textContent = event.description || "No description provided for this event.";
+    if (eventTitle) eventTitle.textContent = event.event_name || "Untitled Event";
+    if (eventDate) eventDate.textContent = event.event_date ? "📅 " + formatDate(event.event_date) : "📅 Date unavailable";
+    if (eventLocation) eventLocation.textContent = event.location ? "📍 " + event.location : "📍 Location unavailable";
+    if (eventDescription) eventDescription.textContent = event.description || "No description provided for this event.";
 
-    if (event.show_budget && event.budget) {
+    if (event.show_budget && event.budget && eventBudget) {
         eventBudget.style.display = "inline";
         eventBudget.textContent = "💰 Rs. " + Number(event.budget).toLocaleString("en-LK");
     }
 
-    // 2. Fetch Categories
     loadEventCategories(eventId);
-
-    // 3. Fetch Media
     loadEventMedia(eventId);
 }
 
@@ -141,7 +147,7 @@ async function loadEventCategories(eventId) {
         .select("*")
         .eq("event_id", eventId);
 
-    if (categories && categories.length > 0) {
+    if (categories && categories.length > 0 && categoryFilterBar) {
         categories.forEach(cat => {
             const btn = document.createElement("button");
             btn.className = "filter-btn";
@@ -156,8 +162,7 @@ async function loadEventCategories(eventId) {
         });
     }
 
-    // All Button listener
-    categoryFilterBar.querySelector('[data-category="all"]')?.addEventListener("click", (e) => {
+    categoryFilterBar?.querySelector('[data-category="all"]')?.addEventListener("click", (e) => {
         document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
         e.target.classList.add("active");
         renderMediaByCategory("all");
@@ -171,8 +176,8 @@ async function loadEventMedia(eventId) {
         .eq("event_id", eventId);
 
     if (error || !media) {
-        photosGrid.innerHTML = `<div class="empty-gallery-msg">Failed to load media.</div>`;
-        videosGrid.innerHTML = `<div class="empty-gallery-msg">Failed to load media.</div>`;
+        if (photosGrid) photosGrid.innerHTML = `<div class="empty-gallery-msg">Failed to load media.</div>`;
+        if (videosGrid) videosGrid.innerHTML = `<div class="empty-gallery-msg">Failed to load media.</div>`;
         return;
     }
 
@@ -181,8 +186,8 @@ async function loadEventMedia(eventId) {
 }
 
 function renderMediaByCategory(categoryId) {
-    photosGrid.innerHTML = "";
-    videosGrid.innerHTML = "";
+    if (photosGrid) photosGrid.innerHTML = "";
+    if (videosGrid) videosGrid.innerHTML = "";
 
     const filtered = categoryId === "all" 
         ? allMediaItems 
@@ -191,9 +196,9 @@ function renderMediaByCategory(categoryId) {
     const photos = filtered.filter(m => m.media_type === "photo" || m.media_type === "image");
     const videos = filtered.filter(m => m.media_type === "video");
 
-    // Render Photos with Lightbox Trigger
+    // Render Photos with Direct Lightbox Trigger
     if (photos.length === 0) {
-        photosGrid.innerHTML = `<div class="empty-gallery-msg">No photos available for this category.</div>`;
+        if (photosGrid) photosGrid.innerHTML = `<div class="empty-gallery-msg">No photos available for this category.</div>`;
     } else {
         photos.forEach(item => {
             const card = document.createElement("div");
@@ -201,18 +206,20 @@ function renderMediaByCategory(categoryId) {
             card.style.cursor = "pointer";
             card.innerHTML = `<img src="${item.file_url}" alt="Event Photo" loading="lazy">`;
 
-            // Click -> Open Full Size Image
-            card.addEventListener("click", () => {
+            // Card Click -> Open Full Size Image
+            card.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
                 openLightbox(item.file_url);
             });
 
-            photosGrid.appendChild(card);
+            if (photosGrid) photosGrid.appendChild(card);
         });
     }
 
     // Render Videos
     if (videos.length === 0) {
-        videosGrid.innerHTML = `<div class="empty-gallery-msg">No videos available for this category.</div>`;
+        if (videosGrid) videosGrid.innerHTML = `<div class="empty-gallery-msg">No videos available for this category.</div>`;
     } else {
         videos.forEach(item => {
             const card = document.createElement("div");
@@ -221,7 +228,7 @@ function renderMediaByCategory(categoryId) {
                 <span class="video-card-badge">🎥 Video</span>
                 <video src="${item.file_url}" controls></video>
             `;
-            videosGrid.appendChild(card);
+            if (videosGrid) videosGrid.appendChild(card);
         });
     }
 }
