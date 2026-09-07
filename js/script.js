@@ -9,11 +9,11 @@ async function loadPublishedEvents() {
 
     eventsContainer.innerHTML = `<div class="events-loading">Loading events...</div>`;
 
+    // Database Fetch Request (order එක ඉවත් කර ආරක්ෂිත ලෙස Fetch කරනු ලැබේ)
     const { data: events, error } = await supabase
         .from("events")
         .select("*")
-        .eq("published", true)
-        .order("event_date", { ascending: false });
+        .eq("published", true);
 
     if (error) {
         console.error("HOME EVENT LOAD ERROR:", error);
@@ -115,3 +115,24 @@ function formatBudget(amount) {
 }
 
 loadPublishedEvents();
+// Dynamic Hero Photo Loading (Fixed Version)
+async function applyDynamicHeroImage() {
+    try {
+        const heroSection = document.querySelector(".hero");
+        if (!heroSection) return;
+
+        const { data, error } = await supabase
+            .from("site_settings")
+            .select("value")
+            .eq("key", "hero_image_url")
+            .maybeSingle();
+
+        if (!error && data && data.value) {
+            heroSection.style.backgroundImage = `linear-gradient(135deg, rgba(28, 26, 23, 0.88) 25%, rgba(28, 26, 23, 0.50)), url('${data.value}')`;
+        }
+    } catch (err) {
+        console.error("Hero Image Load Error:", err);
+    }
+}
+
+applyDynamicHeroImage();
