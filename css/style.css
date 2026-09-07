@@ -419,6 +419,60 @@ footer {
     width: 100%;
 }
 
+/* =========================================================
+   ADDITIONAL COMPONENT STYLES (PAGINATION & BACK BUTTONS)
+   ========================================================= */
+
+/* BACK TO HOME BUTTONS */
+.back-home-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, #f3e5ad 0%, #c5a059 50%, #9e7b32 100%);
+    color: #121110 !important;
+    font-weight: 600;
+    padding: 8px 18px;
+    border-radius: 0px;
+    text-decoration: none;
+    font-size: 12px;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
+}
+
+.back-home-btn:hover {
+    background: #ffffff;
+    color: #121110 !important;
+    transform: translateX(-3px);
+    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
+}
+
+.bottom-back-container {
+    text-align: center;
+    padding: 20px 20px 80px;
+    background: var(--bg);
+}
+
+.bottom-back-btn {
+    display: inline-block;
+    padding: 14px 32px;
+    background: linear-gradient(135deg, #f3e5ad 0%, #c5a059 50%, #9e7b32 100%);
+    color: #121110 !important;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 0px;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 25px rgba(212, 175, 55, 0.2);
+}
+
+.bottom-back-btn:hover {
+    background: #ffffff;
+    color: #121110 !important;
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(255, 255, 255, 0.3);
+}
+
 /* ======================================================
    STRICT RESPONSIVE MEDIA QUERIES (MOBILE FIXES)
    ====================================================== */

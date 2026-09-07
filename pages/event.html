@@ -102,7 +102,7 @@
 
         /* CATEGORY FILTER TABS */
         .gallery-container {
-            padding: 40px 8% 80px;
+            padding: 40px 8% 40px;
         }
 
         .category-filter-bar {
@@ -230,6 +230,57 @@
             color: var(--accent-gold);
         }
 
+        /* BUTTON STYLES */
+        .back-home-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #f3e5ad 0%, #c5a059 50%, #9e7b32 100%);
+            color: #121110 !important;
+            font-weight: 600;
+            padding: 8px 18px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 13px;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(197, 160, 89, 0.2);
+        }
+
+        .back-home-btn:hover {
+            background: #ffffff;
+            color: #121110 !important;
+            transform: translateX(-3px);
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.3);
+        }
+
+        /* BOTTOM BACK TO HOME BUTTON */
+        .bottom-back-container {
+            text-align: center;
+            padding: 20px 20px 80px;
+            background: var(--bg-dark);
+        }
+
+        .bottom-back-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #f3e5ad 0%, #c5a059 50%, #9e7b32 100%);
+            color: #121110 !important;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(197, 160, 89, 0.2);
+        }
+
+        .bottom-back-btn:hover {
+            background: #ffffff;
+            color: #121110 !important;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 255, 255, 0.3);
+        }
+
         @media (max-width: 768px) {
             .event-title-main { font-size: 30px; }
             .media-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
@@ -238,11 +289,11 @@
 </head>
 <body>
 
+    <!-- NAVIGATION WITH BACK TO HOME BUTTON -->
     <nav class="event-nav">
         <a href="../index.html" class="brand-logo">PRIME-D</a>
         <div class="nav-links">
-            <a href="../index.html">HOME</a>
-            <a href="../index.html#events">EVENTS</a>
+            <a href="../index.html" class="back-home-btn">← Back to Home</a>
         </div>
     </nav>
 
@@ -279,6 +330,13 @@
             <div class="empty-gallery-msg">Loading videos...</div>
         </div>
     </main>
+
+    <!-- BOTTOM BACK TO HOME BUTTON -->
+    <div class="bottom-back-container">
+        <a href="../index.html" class="bottom-back-btn">
+            ← Back to All Events
+        </a>
+    </div>
 
     <!-- FULLSCREEN LIGHTBOX MODAL -->
     <div class="lightbox-modal" id="lightboxModal">
