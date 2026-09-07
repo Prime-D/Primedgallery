@@ -6,18 +6,26 @@ const eventsContainer = document.getElementById("eventsContainer");
 const paginationContainer = document.getElementById("paginationContainer");
 
 let currentPage = 1;
-const itemsPerPage = 6; // PC එකේ පේළි 2කට Cards 6ක් (3x2), Mobile එකේ එකින් එක Cards 6ක්
+const itemsPerPage = 6;
 
 async function loadPublishedEvents(page = 1) {
     if (!eventsContainer) return;
 
-    eventsContainer.innerHTML = `<div class="events-loading" style="color:var(--muted); text-align:center; grid-column:1/-1;">Loading events...</div>`;
+    // Skeleton / Smooth Loader
+    eventsContainer.innerHTML = `<div class="events-loading" style="color:var(--muted); text-align:center; grid-column:1/-1; padding: 40px;">Loading Prime-D Experience...</div>`;
 
-    // Total Events ගණන ලබා ගැනීම
+    // Single Query Join to Fetch Events + Cover Image Fast
     const { data: allEvents, error } = await supabase
         .from("events")
-        .select("*")
-        .eq("published", true);
+        .select(`
+            *,
+            event_media (
+                file_url,
+                media_type
+            )
+        `)
+        .eq("published", true)
+        .order("created_at", { ascending: false });
 
     if (error) {
         console.error("HOME EVENT LOAD ERROR:", error);
@@ -31,7 +39,6 @@ async function loadPublishedEvents(page = 1) {
         return;
     }
 
-    // Pagination Calculators (Slice Events Array)
     const totalItems = allEvents.length;
     const startIndex = (page - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -43,12 +50,28 @@ async function loadPublishedEvents(page = 1) {
         const card = document.createElement("article");
         card.className = "event-card";
 
+        // Extract Cover Image directly from Join Query
+        let coverUrl = "images/hero.jpg";
+        if (event.event_media && event.event_media.length > 0) {
+            const firstPhoto = event.event_media.find(m => m.media_type === "image" || m.media_type === "photo");
+            if (firstPhoto && firstPhoto.file_url) {
+                coverUrl = firstPhoto.file_url;
+            }
+        }
+
         const imageWrapper = document.createElement("div");
         imageWrapper.className = "event-image";
 
+        // Optimized Image Tag with High-Quality rendering & fast loading attributes
         const image = document.createElement("img");
-        image.src = "images/hero.jpg";
+        image.src = coverUrl;
         image.alt = event.event_name || "Prime-D Event";
+        image.loading = "eager"; // Fast load for visible cards
+        image.decoding = "async";
+        image.style.objectFit = "cover";
+        image.style.width = "100%";
+        image.style.height = "100%";
+        
         imageWrapper.appendChild(image);
 
         const info = document.createElement("div");
@@ -90,11 +113,8 @@ async function loadPublishedEvents(page = 1) {
         card.appendChild(imageWrapper);
         card.appendChild(info);
         eventsContainer.appendChild(card);
-
-        loadEventCoverImage(event.id, image);
     });
 
-    // Render Pagination Controls
     renderPagination(totalItems, page);
 }
 
@@ -109,13 +129,13 @@ function renderPagination(totalItems, page) {
 
     paginationContainer.innerHTML = `
         <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 40px; width: 100%;">
-            <button id="prevPageBtn" class="primary-button" style="padding: 10px 20px;" ${page === 1 ? "disabled style='opacity:0.4; cursor:not-allowed;'" : ""}>
+            <button id="prevPageBtn" class="primary-button" style="padding: 10px 20px; margin-top:0;" ${page === 1 ? "disabled style='opacity:0.4; cursor:not-allowed; margin-top:0;'" : ""}>
                 ← Previous
             </button>
             <span style="color: var(--gold); font-weight: 600; font-size: 14px;">
                 Page ${page} of ${totalPages}
             </span>
-            <button id="nextPageBtn" class="primary-button" style="padding: 10px 20px;" ${page === totalPages ? "disabled style='opacity:0.4; cursor:not-allowed;'" : ""}>
+            <button id="nextPageBtn" class="primary-button" style="padding: 10px 20px; margin-top:0;" ${page === totalPages ? "disabled style='opacity:0.4; cursor:not-allowed; margin-top:0;'" : ""}>
                 Next →
             </button>
         </div>
@@ -136,24 +156,6 @@ function renderPagination(totalItems, page) {
             document.getElementById("events")?.scrollIntoView({ behavior: "smooth" });
         }
     });
-}
-
-async function loadEventCoverImage(eventId, imageElement) {
-    try {
-        const { data: media, error } = await supabase
-            .from("event_media")
-            .select("*")
-            .eq("event_id", eventId)
-            .in("media_type", ["image", "photo"])
-            .order("created_at", { ascending: true })
-            .limit(1);
-
-        if (!error && media && media.length > 0 && media[0].file_url) {
-            imageElement.src = media[0].file_url;
-        }
-    } catch (error) {
-        console.error("COVER IMAGE ERROR:", error);
-    }
 }
 
 function formatDate(dateString) {
