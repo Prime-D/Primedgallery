@@ -3,32 +3,43 @@ import { supabase } from "./supabase.js";
 console.log("HOME SCRIPT LOADED ✅");
 
 const eventsContainer = document.getElementById("eventsContainer");
+const paginationContainer = document.getElementById("paginationContainer");
 
-async function loadPublishedEvents() {
+let currentPage = 1;
+const itemsPerPage = 6; // PC එකේ පේළි 2කට Cards 6ක් (3x2), Mobile එකේ එකින් එක Cards 6ක්
+
+async function loadPublishedEvents(page = 1) {
     if (!eventsContainer) return;
 
-    eventsContainer.innerHTML = `<div class="events-loading">Loading events...</div>`;
+    eventsContainer.innerHTML = `<div class="events-loading" style="color:var(--muted); text-align:center; grid-column:1/-1;">Loading events...</div>`;
 
-    // Database Fetch Request (order එක ඉවත් කර ආරක්ෂිත ලෙස Fetch කරනු ලැබේ)
-    const { data: events, error } = await supabase
+    // Total Events ගණන ලබා ගැනීම
+    const { data: allEvents, error } = await supabase
         .from("events")
         .select("*")
         .eq("published", true);
 
     if (error) {
         console.error("HOME EVENT LOAD ERROR:", error);
-        eventsContainer.innerHTML = `<div class="events-loading">Unable to load events.</div>`;
+        eventsContainer.innerHTML = `<div class="events-loading" style="color:var(--muted); text-align:center; grid-column:1/-1;">Unable to load events.</div>`;
         return;
     }
 
-    if (!events || events.length === 0) {
-        eventsContainer.innerHTML = `<div class="events-loading">No published events yet.</div>`;
+    if (!allEvents || allEvents.length === 0) {
+        eventsContainer.innerHTML = `<div class="events-loading" style="color:var(--muted); text-align:center; grid-column:1/-1;">No published events yet.</div>`;
+        if (paginationContainer) paginationContainer.innerHTML = "";
         return;
     }
+
+    // Pagination Calculators (Slice Events Array)
+    const totalItems = allEvents.length;
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const pageEvents = allEvents.slice(startIndex, endIndex);
 
     eventsContainer.innerHTML = "";
 
-    events.forEach((event) => {
+    pageEvents.forEach((event) => {
         const card = document.createElement("article");
         card.className = "event-card";
 
@@ -82,6 +93,49 @@ async function loadPublishedEvents() {
 
         loadEventCoverImage(event.id, image);
     });
+
+    // Render Pagination Controls
+    renderPagination(totalItems, page);
+}
+
+function renderPagination(totalItems, page) {
+    if (!paginationContainer) return;
+
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    if (totalPages <= 1) {
+        paginationContainer.innerHTML = "";
+        return;
+    }
+
+    paginationContainer.innerHTML = `
+        <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 40px; width: 100%;">
+            <button id="prevPageBtn" class="primary-button" style="padding: 10px 20px;" ${page === 1 ? "disabled style='opacity:0.4; cursor:not-allowed;'" : ""}>
+                ← Previous
+            </button>
+            <span style="color: var(--gold); font-weight: 600; font-size: 14px;">
+                Page ${page} of ${totalPages}
+            </span>
+            <button id="nextPageBtn" class="primary-button" style="padding: 10px 20px;" ${page === totalPages ? "disabled style='opacity:0.4; cursor:not-allowed;'" : ""}>
+                Next →
+            </button>
+        </div>
+    `;
+
+    document.getElementById("prevPageBtn")?.addEventListener("click", () => {
+        if (currentPage > 1) {
+            currentPage--;
+            loadPublishedEvents(currentPage);
+            document.getElementById("events")?.scrollIntoView({ behavior: "smooth" });
+        }
+    });
+
+    document.getElementById("nextPageBtn")?.addEventListener("click", () => {
+        if (currentPage < totalPages) {
+            currentPage++;
+            loadPublishedEvents(currentPage);
+            document.getElementById("events")?.scrollIntoView({ behavior: "smooth" });
+        }
+    });
 }
 
 async function loadEventCoverImage(eventId, imageElement) {
@@ -114,8 +168,9 @@ function formatBudget(amount) {
     return "Rs. " + number.toLocaleString("en-LK");
 }
 
-loadPublishedEvents();
-// Dynamic Hero Photo Loading (Fixed Version)
+loadPublishedEvents(currentPage);
+
+// Dynamic Hero Photo Loading
 async function applyDynamicHeroImage() {
     try {
         const heroSection = document.querySelector(".hero");
