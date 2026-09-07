@@ -50,9 +50,9 @@ async function loadPublishedEvents(page = 1) {
         const card = document.createElement("article");
         card.className = "event-card";
 
-        // Extract Cover Image directly from Join Query
-        let coverUrl = "images/hero.jpg";
-        if (event.event_media && event.event_media.length > 0) {
+        // Extract Cover Image directly from cover_image_url OR Event Media
+        let coverUrl = event.cover_image_url || "images/hero.jpg";
+        if (!event.cover_image_url && event.event_media && event.event_media.length > 0) {
             const firstPhoto = event.event_media.find(m => m.media_type === "image" || m.media_type === "photo");
             if (firstPhoto && firstPhoto.file_url) {
                 coverUrl = firstPhoto.file_url;
@@ -62,11 +62,10 @@ async function loadPublishedEvents(page = 1) {
         const imageWrapper = document.createElement("div");
         imageWrapper.className = "event-image";
 
-        // Optimized Image Tag with High-Quality rendering & fast loading attributes
         const image = document.createElement("img");
         image.src = coverUrl;
         image.alt = event.event_name || "Prime-D Event";
-        image.loading = "eager"; // Fast load for visible cards
+        image.loading = "eager";
         image.decoding = "async";
         image.style.objectFit = "cover";
         image.style.width = "100%";
@@ -172,7 +171,7 @@ function formatBudget(amount) {
 
 loadPublishedEvents(currentPage);
 
-// Dynamic Hero Photo Loading (Always Fresh Image Fix)
+// Dynamic Hero Photo Loading (Mobile & PC Multi-device Fix)
 async function applyDynamicHeroImage() {
     try {
         const heroSection = document.querySelector(".hero");
@@ -190,13 +189,17 @@ async function applyDynamicHeroImage() {
         }
 
         if (data && data.value) {
-            // Preload Image to avoid black background
-            const freshUrl = `${data.value}?v=${Date.now()}`;
-            const img = new Image();
-            img.src = freshUrl;
-            img.onload = () => {
-                heroSection.style.backgroundImage = `linear-gradient(135deg, rgba(28, 26, 23, 0.88) 25%, rgba(28, 26, 23, 0.50)), url('${freshUrl}')`;
-            };
+            const freshUrl = data.value;
+            
+            // Set styles directly using setProperty for strict priority across screens
+            heroSection.style.setProperty(
+                "background-image", 
+                `linear-gradient(135deg, rgba(28, 26, 23, 0.40) 25%, rgba(28, 26, 23, 0.65)), url('${freshUrl}')`, 
+                "important"
+            );
+            heroSection.style.setProperty("background-size", "cover", "important");
+            heroSection.style.setProperty("background-position", "center center", "important");
+            heroSection.style.setProperty("background-repeat", "no-repeat", "important");
         }
     } catch (err) {
         console.error("Hero Image Load Error:", err);
