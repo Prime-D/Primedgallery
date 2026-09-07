@@ -191,7 +191,6 @@ async function applyDynamicHeroImage() {
         if (data && data.value) {
             const freshUrl = data.value;
             
-            // Set styles directly using setProperty for strict priority across screens
             heroSection.style.setProperty(
                 "background-image", 
                 `linear-gradient(135deg, rgba(28, 26, 23, 0.40) 25%, rgba(28, 26, 23, 0.65)), url('${freshUrl}')`, 
@@ -207,3 +206,85 @@ async function applyDynamicHeroImage() {
 }
 
 applyDynamicHeroImage();
+
+// FETCH AND RENDER SERVICES ON HOME PAGE (LUXURY EDITORIAL STYLE)
+async function loadHomeServices() {
+    const servicesContainer = document.getElementById("homeServicesContainer");
+    if (!servicesContainer) return;
+
+    const { data: services, error } = await supabase
+        .from("services")
+        .select("*")
+        .order("created_at", { ascending: true });
+
+    // Default Luxury Checklist Services if DB is empty
+    const defaultServices = [
+        {
+            icon: "🎪",
+            title: "Full Decor & Setup",
+            items: [
+                "Backdrop & draping",
+                "Floral arrangements",
+                "Stage and table styling",
+                "Entrance décor",
+                "Welcome sign / name board",
+                "Candles, lanterns & lighting"
+            ],
+            note: "Customizable to match your unique theme, venue, and vision."
+        },
+        {
+            icon: "✨",
+            title: "Guest & Dining Experience",
+            items: [
+                "Guest table styling",
+                "Cake table styling",
+                "Seating & lounge setup",
+                "Setup & dismantling",
+                "On-site coordination support"
+            ],
+            note: "We handle every single detail so you can enjoy your special day stress-free."
+        }
+    ];
+
+    const displayList = (services && services.length > 0) ? services : defaultServices;
+
+    servicesContainer.innerHTML = "";
+
+    displayList.forEach((service) => {
+        const card = document.createElement("div");
+        card.className = "service-card";
+
+        let itemsHtml = "";
+        if (service.items && Array.isArray(service.items)) {
+            itemsHtml = service.items.map(item => `
+                <li>
+                    <span>${item}</span>
+                    <span class="check-icon">✓</span>
+                </li>
+            `).join("");
+        } else if (service.description) {
+            const lines = service.description.split("\n");
+            itemsHtml = lines.map(line => `
+                <li>
+                    <span>${line}</span>
+                    <span class="check-icon">✓</span>
+                </li>
+            `).join("");
+        }
+
+        card.innerHTML = `
+            <div class="service-header">
+                <span class="service-icon">${service.icon || "✨"}</span>
+                <h3 class="service-title">${service.title}</h3>
+            </div>
+            <ul class="service-item-list">
+                ${itemsHtml}
+            </ul>
+            ${service.note ? `<div class="service-footer-note">✦ ${service.note}</div>` : ""}
+        `;
+
+        servicesContainer.appendChild(card);
+    });
+}
+
+loadHomeServices();

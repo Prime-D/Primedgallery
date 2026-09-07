@@ -492,4 +492,70 @@ async function loadCategoryMedia(categoryId) {
             }
         });
     });
+} 
+// ADD & MANAGE SERVICES IN ADMIN DASHBOARD
+const addServiceForm = document.getElementById("addServiceForm");
+const adminServicesList = document.getElementById("adminServicesList");
+
+async function loadAdminServices() {
+    if (!adminServicesList) return;
+
+    const { data: services, error } = await supabase
+        .from("services")
+        .select("*")
+        .order("created_at", { ascending: true });
+
+    if (error) {
+        adminServicesList.innerHTML = `<div style="color:red;">Error loading services</div>`;
+        return;
+    }
+
+    if (!services || services.length === 0) {
+        adminServicesList.innerHTML = `<div style="color:#a0a0a0;">No services added yet.</div>`;
+        return;
+    }
+
+    adminServicesList.innerHTML = "";
+    services.forEach(s => {
+        const item = document.createElement("div");
+        item.style.cssText = `display: flex; justify-content: space-between; align-items: center; background: #121212; padding: 12px 18px; border-radius: 8px; border: 1px solid #2a2a2a;`;
+        item.innerHTML = `
+            <div>
+                <strong style="color: #c5a059;">${s.icon || "✨"} ${s.title}</strong>
+                <p style="margin: 4px 0 0; font-size: 13px; color: #a0a0a0;">${s.description || ""}</p>
+            </div>
+            <button onclick="deleteService('${s.id}')" style="background: #ff4d4d; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Delete</button>
+        `;
+        adminServicesList.appendChild(item);
+    });
 }
+
+addServiceForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const title = document.getElementById("serviceTitle").value;
+    const icon = document.getElementById("serviceIcon").value || "✨";
+    const description = document.getElementById("serviceDescription").value;
+
+    const { error } = await supabase.from("services").insert([{ title, icon, description }]);
+
+    if (error) {
+        alert("Failed to add service: " + error.message);
+    } else {
+        addServiceForm.reset();
+        loadAdminServices();
+    }
+});
+
+window.deleteService = async (id) => {
+    if (confirm("Are you sure you want to delete this service?")) {
+        const { error } = await supabase.from("services").delete().eq("id", id);
+        if (error) {
+            alert("Delete failed: " + error.message);
+        } else {
+            loadAdminServices();
+        }
+    }
+};
+
+// Initial Load
+loadAdminServices();
