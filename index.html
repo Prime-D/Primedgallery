@@ -104,7 +104,24 @@
 <body>
 
     <!-- =========================
-         NAVIGATION
+        CUSTOM PAGE PRELOADER
+    ========================== -->
+    <div id="pagePreloader" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #121212; display: flex; justify-content: center; align-items: center; z-index: 999999; transition: opacity 0.5s ease; color: #c5a059; font-family: sans-serif;">
+        <div style="text-align: center;">
+            <div class="spinner" style="width: 50px; height: 50px; border: 3px solid rgba(197, 160, 89, 0.2); border-top: 3px solid #c5a059; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px auto;"></div>
+            <h3 style="letter-spacing: 2px; font-size: 16px; margin: 0; color: #ffffff;">PRIME-D</h3>
+        </div>
+    </div>
+
+    <style>
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    </style>
+
+    <!-- =========================
+        NAVIGATION
     ========================== -->
 
     <header class="navbar">
@@ -125,7 +142,7 @@
 
 
     <!-- =========================
-         HERO
+        HERO
     ========================== -->
 
     <section class="hero" id="home">
@@ -156,7 +173,7 @@
 
 
     <!-- =========================
-         EVENTS
+        EVENTS
     ========================== -->
 
     <section class="events-section" id="events">
@@ -196,7 +213,7 @@
 
 
     <!-- =========================
-         OUR SERVICES CATEGORIES SECTION
+        OUR SERVICES CATEGORIES SECTION
     ========================== -->
 
     <section class="services-section" id="services">
@@ -214,7 +231,7 @@
 
 
     <!-- =========================
-         ABOUT (CENTERED)
+        ABOUT (CENTERED)
     ========================== -->
 
     <section class="about-section" id="about">
@@ -242,7 +259,7 @@
 
 
     <!-- =========================
-         CONTACT
+        CONTACT
     ========================== -->
 
     <section class="contact-section" id="contact">
@@ -368,7 +385,7 @@
 
 
     <!-- =========================
-         WEBSITE QR CODE
+        WEBSITE QR CODE
     ========================== -->
 
     <section class="qr-section">
@@ -400,7 +417,7 @@
 
 
     <!-- =========================
-         FOOTER
+        FOOTER
     ========================== -->
 
     <footer>
@@ -413,7 +430,7 @@
     </footer>
 
     <!-- =========================
-         SCRIPTS (MAIN SCRIPT & HOME SERVICES LOADER)
+        SCRIPTS (MAIN SCRIPT & HOME SERVICES LOADER)
     ========================== -->
     <script type="module" src="js/script.js"></script>
 
@@ -468,6 +485,17 @@
         }
 
         loadHomeServices();
+
+        // Hide Preloader when page is fully loaded
+        window.addEventListener("load", () => {
+            const preloader = document.getElementById("pagePreloader");
+            if (preloader) {
+                preloader.style.opacity = "0";
+                setTimeout(() => {
+                    preloader.style.display = "none";
+                }, 500);
+            }
+        });
     </script>
 
 </body>
