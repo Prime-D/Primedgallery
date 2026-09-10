@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prime-D | Service Checklist</title>
+    <link rel="stylesheet" href="../css/style.css?v=1.6">
+    <style>
+        body {
+            background-color: #1c1a17 !important;
+            margin: 0;
+            font-family: inherit;
+            position: relative;
+        }
+        section.services-section, header.navbar, footer {
+            background: transparent !important;
+        }
+
+        /* ==========================================
+            MOBILE RESPONSIVE FIXES FOR SERVICES PAGE
+            ========================================== */
+        @media (max-width: 768px) {
+            .services-section {
+                padding: 40px 15px !important;
+            }
+            .section-heading h2 {
+                font-size: 28px !important;
+            }
+            .section-heading p {
+                font-size: 14px !important;
+                padding: 0 10px;
+            }
+            .services-container-list {
+                width: 100% !important;
+                margin: 20px auto 0 auto !important;
+                padding: 0 10px !important;
+            }
+            .service-row {
+                padding: 14px 15px !important;
+                gap: 12px !important;
+                margin-bottom: 10px !important;
+            }
+            .service-title {
+                font-size: 15px !important;
+                word-break: break-word;
+            }
+            .service-footer-banner {
+                padding: 20px 15px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- පිටුවේ පසුබිම සඳහා වෙන් වූ ස්ථරය (Background Layer) -->
+    <div id="pageBackground" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background-color: #1c1a17; background-size: cover; background-position: center center; background-repeat: no-repeat;"></div>
+
+    <!-- NAVIGATION -->
+    <header class="navbar">
+        <div class="logo">PRIME-D</div>
+        <nav>
+            <a href="../index.html">Home</a>
+            <a href="../index.html#events">Events</a>
+            <a href="../index.html#services">Services</a>
+            <a href="../index.html#about">About</a>
+            <a href="../index.html#contact">Contact</a>
+        </nav>
+    </header>
+
+    <!-- SERVICES LIST SECTION -->
+    <section class="services-section" style="min-height: 70vh; position: relative; z-index: 2; padding: 60px 8%;">
+        <div class="section-heading" style="text-align: center; margin: 0 auto; max-width: 800px;">
+            <p class="section-label" id="packageNameLabel">PACKAGE CHECKLIST</p>
+            <h2 id="pageTitle" style="color: #ffffff; font-family: 'Cormorant Garamond', Georgia, serif; font-size: clamp(32px, 4vw, 45px); font-weight: 300; margin: 10px 0;">Service Checklist</h2>
+            <p style="color: #a49c91;">Everything you need for a stress-free, perfectly styled celebration.</p>
+        </div>
+
+        <!-- Dynamic List Container -->
+        <div class="services-container-list" id="categoryServicesContainer" style="max-width: 900px; margin: 40px auto 0 auto;">
+            <div style="color: #a49c91; text-align: center; padding: 40px;">Loading services...</div>
+        </div>
+
+        <!-- Back Button -->
+        <div style="text-align: center; margin-top: 50px;" id="backBtnContainer">
+            <!-- Back button link will be set dynamically -->
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer style="position: relative; z-index: 2; text-align: center; padding: 30px 20px; color: #a49c91; border-top: 1px solid rgba(255,255,255,0.05);">
+        <p>© 2026 Prime-D Event Planning & Decorations. All Rights Reserved.</p>
+    </footer>
+
+    <!-- SCRIPT TO LOAD PACKAGE SERVICES -->
+    <script type="module">
+        import { supabase } from "../js/supabase.js";
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const categorySlug = urlParams.get("category");
+        const packageId = urlParams.get("package_id");
+
+        const pageTitle = document.getElementById("pageTitle");
+        const packageNameLabel = document.getElementById("packageNameLabel");
+        const container = document.getElementById("categoryServicesContainer");
+        const backBtnContainer = document.getElementById("backBtnContainer");
+        const pageBackground = document.getElementById("pageBackground");
+
+        // Set back button dynamically
+        if (backBtnContainer && categorySlug) {
+            backBtnContainer.innerHTML = `<a href="packages.html?category=${categorySlug}" class="primary-button">← Back to Packages</a>`;
+        } else {
+            backBtnContainer.innerHTML = `<a href="../index.html#services" class="primary-button">← Back to Services</a>`;
+        }
+
+        async function loadPackageServices() {
+            if (!packageId) {
+                container.innerHTML = `<div style="color: #a49c91; text-align: center; padding: 30px;">No package specified.</div>`;
+                return;
+            }
+
+            // 1. Fetch Package Details from 'packages' table including bg_image
+            const { data: pkgData, error: pkgError } = await supabase
+                .from("packages")
+                .select("*")
+                .eq("id", packageId)
+                .single();
+
+            if (pkgError || !pkgData) {
+                container.innerHTML = `<div style="color: #a49c91; text-align: center; padding: 30px;">Package not found.</div>`;
+                return;
+            }
+
+            packageNameLabel.textContent = (pkgData.package_name || "PACKAGE").toUpperCase();
+            pageTitle.textContent = pkgData.package_name + " Checklist";
+
+            // Apply background image to the dedicated background layer with dark overlay
+            if (pkgData.bg_image && pkgData.bg_image.trim() !== "") {
+                if (pageBackground) {
+                    pageBackground.style.backgroundImage = `linear-gradient(rgba(18, 17, 16, 0.75), rgba(18, 17, 16, 0.75)), url('${pkgData.bg_image.trim()}')`;
+                }
+            }
+
+            // 2. Fetch Package Services (Checklist items) from 'package_services' table using package_id
+            const { data: services, error } = await supabase
+                .from("package_services")
+                .select("*")
+                .eq("package_id", packageId)
+                .order("created_at", { ascending: true });
+
+            if (error || !services || services.length === 0) {
+                container.innerHTML = `<div style="color: #a49c91; text-align: center; padding: 30px;">No service items found for this package yet. Please add them via Admin Panel.</div>`;
+                return;
+            }
+
+            container.innerHTML = "";
+            services.forEach(s => {
+                const row = document.createElement("div");
+                row.className = "service-row";
+                row.style.cssText = "display: flex; justify-content: space-between; align-items: center; background: rgba(30, 30, 30, 0.85); padding: 16px 20px; border-radius: 8px; border: 1px solid rgba(212, 175, 55, 0.2); margin-bottom: 12px; backdrop-filter: blur(10px);";
+                row.innerHTML = `
+                    <div class="service-row-left" style="display: flex; align-items: center; gap: 15px;">
+                        <span class="service-icon" style="font-size: 22px;">${s.icon || "✨"}</span>
+                        <h3 class="service-title" style="font-size: 16px; color: #ffffff; margin: 0; font-weight: 500;">${s.title}</h3>
+                    </div>
+                    <div class="service-check" style="color: #c5a059; font-weight: bold; font-size: 18px;">✓</div>
+                `;
+                container.appendChild(row);
+            });
+
+            // Footer banner
+            const footerBanner = document.createElement("div");
+            footerBanner.className = "service-footer-banner";
+            footerBanner.style.cssText = "text-align: center; margin-top: 40px; padding: 30px; background: rgba(30, 30, 30, 0.85); border: 1px dashed #c5a059; border-radius: 10px; backdrop-filter: blur(10px);";
+            footerBanner.innerHTML = `
+                <h3 style="color: #c5a059; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; margin-top: 0;">✦ WE CAN COVER THE FULL EVENT ✦</h3>
+                <p style="margin-bottom: 15px; color: #a49c91;">From planning to execution, we handle every detail so you can simply enjoy your special day stress-free.</p>
+                <p style="font-size: 14px; color: #c5a059; margin: 0;">♥ Customizable to match your theme, venue, and vision.</p>
+            `;
+            container.appendChild(footerBanner);
+        }
+
+        loadPackageServices();
+    </script>
+</body>
+</html>

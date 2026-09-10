@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -285,7 +284,7 @@
         </div>
     </section>
 
-    <!-- 3. MANAGE SELECTED EVENT (EVENT HERO COVER PHOTO ADDED HERE) -->
+    <!-- 3. MANAGE SELECTED EVENT -->
     <section class="admin-section">
         <h2>03. Manage Selected Event Details</h2>
 
@@ -346,44 +345,113 @@
             <div id="eventStatus" class="message"></div>
         </div>
     </section>
-<!-- SERVICES MANAGEMENT SECTION -->
-<div class="admin-card" style="margin-top: 30px; background: #1e1e1e; padding: 25px; border-radius: 12px; border: 1px solid #2a2a2a;">
-    <h2 style="color: #c5a059; margin-bottom: 20px;">🛠️ Manage Services</h2>
-    
-    <form id="addServiceForm" style="display: flex; flex-direction: column; gap: 15px;">
-        <input type="text" id="serviceTitle" placeholder="Service Title (e.g. Wedding Decoration)" required style="padding: 12px; border-radius: 6px; background: #121212; border: 1px solid #2a2a2a; color: #fff;">
-        <input type="text" id="serviceIcon" placeholder="Service Icon / Emoji (e.g. 💍, 🎉, 🎈)" style="padding: 12px; border-radius: 6px; background: #121212; border: 1px solid #2a2a2a; color: #fff;">
-        <textarea id="serviceDescription" placeholder="Service Description..." rows="3" style="padding: 12px; border-radius: 6px; background: #121212; border: 1px solid #2a2a2a; color: #fff;"></textarea>
-        <button type="submit" style="padding: 12px; background: #c5a059; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: #121212;">➕ Add New Service</button>
-    </form>
 
-    <hr style="border-color: #2a2a2a; margin: 25px 0;">
+    <!-- INDEPENDENT SERVICE CATEGORIES MANAGEMENT SECTION -->
+    <section class="admin-section" style="background: #1e1e1e; border: 1px solid #2a2a2a;">
+        <h2 style="color: #c5a059;">📦 Manage Independent Service Categories</h2>
+        
+        <form id="addServiceCategoryForm" style="display: flex; flex-direction: column; gap: 15px;">
+            <input type="text" id="catName" placeholder="Category Name (e.g. Stage Decorations)" required style="padding: 12px; background: #121212; border: 1px solid #2a2a2a; color: #fff; border-radius: 6px;">
+            <input type="text" id="catSlug" placeholder="Slug (e.g. stage-decorations)" required style="padding: 12px; background: #121212; border: 1px solid #2a2a2a; color: #fff; border-radius: 6px;">
+            <input type="text" id="catIcon" placeholder="Icon / Emoji (e.g. 🎪)" value="🎪" style="padding: 12px; background: #121212; border: 1px solid #2a2a2a; color: #fff; border-radius: 6px; text-align: center;">
+            
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="color: #f5f5f5; font-size: 13px; margin-bottom: 5px;">Category Banner Image File</label>
+                <input type="file" id="catImageFile" accept="image/*" style="padding: 10px; background: #121212; border: 1px solid #2a2a2a; color: #fff; border-radius: 6px;">
+            </div>
 
-    <h3 style="color: #f5f5f5;">Existing Services</h3>
-    <div id="adminServicesList" style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
-        Loading services...
-    </div>
-</div>
-    <!-- 4. CATEGORY MANAGEMENT -->
+            <!-- අලුතින් එකතු කළ Category Background Image ෆීල්ඩ් එක -->
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="color: #f5f5f5; font-size: 13px; margin-bottom: 5px;">Category Light Background Image File (Packages Page)</label>
+                <input type="file" id="catBgFile" accept="image/*" style="padding: 10px; background: #121212; border: 1px solid #2a2a2a; color: #fff; border-radius: 6px;">
+            </div>
+
+            <textarea id="catDesc" placeholder="Short description..." rows="2" style="padding: 12px; background: #121212; border: 1px solid #2a2a2a; color: #fff; border-radius: 6px;"></textarea>
+            
+            <button type="submit" style="padding: 12px; background: #c5a059; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: #121212;">+ Add Service Category</button>
+        </form>
+
+        <hr style="border-color: #2a2a2a; margin: 25px 0;">
+
+        <h3 style="color: #f5f5f5; font-size: 18px; margin-bottom: 15px;">Existing Service Categories</h3>
+        <div id="adminServiceCatsList" style="display: flex; flex-direction: column; gap: 10px;">
+            Loading categories...
+        </div>
+    </section>
+
+    <!-- PACKAGES & PACKAGE SERVICES MANAGEMENT SECTION -->
+    <section class="admin-section" style="background: #1e1e1e; border: 1px solid #2a2a2a;">
+        <h2 style="color: #c5a059;">📦 Manage Packages & Service Checklists</h2>
+        
+        <form id="addPackageForm" style="display: flex; flex-direction: column; gap: 15px;">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="color: #f5f5f5;">Select Service Category</label>
+                <select id="pkgCategorySlug" required style="background: #121212; border: 1px solid #2a2a2a; color: #fff; padding: 12px; border-radius: 6px;">
+                    <option value="">-- Select Category --</option>
+                </select>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="color: #f5f5f5;">Package Name</label>
+                <input type="text" id="pkgName" placeholder="e.g. Gold Package, Standard Package" required style="background: #121212; border: 1px solid #2a2a2a; color: #fff; padding: 12px; border-radius: 6px;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="color: #f5f5f5; font-size: 13px; margin-bottom: 5px;">Package Cover Image File</label>
+                <input type="file" id="pkgImageFile" accept="image/*" style="padding: 10px; background: #121212; border: 1px solid #2a2a2a; color: #fff; border-radius: 6px;">
+            </div>
+
+            <!-- අලුතින් එකතු කළ Package Background Image ෆීල්ඩ් එක -->
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="color: #f5f5f5; font-size: 13px; margin-bottom: 5px;">Package Full Page Background Image File (Checklist Page)</label>
+                <input type="file" id="pkgBgFile" accept="image/*" style="padding: 10px; background: #121212; border: 1px solid #2a2a2a; color: #fff; border-radius: 6px;">
+            </div>
+
+            <textarea id="pkgDesc" placeholder="Optional package description..." rows="2" style="background: #121212; border: 1px solid #2a2a2a; color: #fff; padding: 12px; border-radius: 6px;"></textarea>
+            
+            <button type="submit" style="padding: 12px; background: #c5a059; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: #121212;">+ Create Package</button>
+        </form>
+
+        <hr style="border-color: #2a2a2a; margin: 25px 0;">
+
+        <h3 style="color: #f5f5f5; font-size: 18px; margin-bottom: 15px;">Add Service Item to Package</h3>
+        <form id="addPkgServiceForm" style="display: flex; flex-direction: column; gap: 15px;">
+            <div class="form-group" style="margin-bottom: 0;">
+                <label style="color: #f5f5f5;">Select Created Package</label>
+                <select id="pkgSelectDropdown" required style="background: #121212; border: 1px solid #2a2a2a; color: #fff; padding: 12px; border-radius: 6px;">
+                    <option value="">-- Select Package --</option>
+                </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 4fr 1fr; gap: 15px;">
+                <input type="text" id="pkgServiceTitle" placeholder="Service Item (e.g. Backdrop & Draping)" required style="background: #121212; border: 1px solid #2a2a2a; color: #fff; padding: 12px; border-radius: 6px;">
+                <input type="text" id="pkgServiceIcon" placeholder="Icon" value="✨" style="background: #121212; border: 1px solid #2a2a2a; color: #fff; padding: 12px; border-radius: 6px; text-align: center;">
+            </div>
+
+            <button type="submit" style="padding: 12px; background: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: #121212;">➕ Add Service to Package Checklist</button>
+        </form>
+    </section>
+
+    <!-- 04. EVENT MEDIA CATEGORIES MANAGEMENT -->
     <section class="admin-section">
-        <h2>04. Manage Categories</h2>
+        <h2>04. Manage Event Media Categories</h2>
 
         <div class="form-group">
-            <label for="categoryName">Category Name</label>
+            <label for="categoryName">Event Media Category Name</label>
             <input type="text" id="categoryName" placeholder="Example: Wedding Ceremony">
         </div>
 
-        <button type="button" id="addCategoryBtn" class="primary-button">+ Add Category</button>
+        <button type="button" id="addCategoryBtn" class="primary-button">+ Add Event Media Category</button>
         <div id="categoryMessage" class="message"></div>
         <div id="categoryList" class="category-list"></div>
     </section>
 
-    <!-- 5. CATEGORY MEDIA UPLOAD -->
+    <!-- 05. EVENT MEDIA UPLOAD -->
     <section class="admin-section">
-        <h2>05. Upload Category Media</h2>
+        <h2>05. Upload Event Media</h2>
 
         <div class="form-group">
-            <label for="categorySelect">Select Category</label>
+            <label for="categorySelect">Select Event Media Category</label>
             <select id="categorySelect">
                 <option value="">-- Select Category --</option>
             </select>
@@ -408,10 +476,10 @@
         <div id="categoryUploadMessage" class="message"></div>
     </section>
 
-    <!-- 6. MANAGE CATEGORY MEDIA -->
+    <!-- 06. MANAGE EVENT MEDIA -->
     <section class="admin-section">
-        <h2>06. Manage Category Media</h2>
-        <p>Select a category above to view and manage uploaded photos and videos.</p>
+        <h2>06. Manage Event Media</h2>
+        <p>Select an event media category above to view and manage uploaded photos and videos.</p>
         <div id="categoryMediaMessage" class="message"></div>
         <div id="categoryMediaList" class="category-media-admin-list"></div>
     </section>

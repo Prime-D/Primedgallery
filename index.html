@@ -7,12 +7,12 @@
 
     <title>Prime-D | Event Planning & Decorations</title>
 
-    <link rel="stylesheet" href="css/style.css?v=1.4">
+    <link rel="stylesheet" href="css/style.css?v=1.6">
     
     <style>
         /* ==========================================
-           HERO SECTION STRICT CSS FIX FOR ALL DEVICES
-           ========================================== */
+            HERO SECTION & SECTION ALIGNMENT FIXES
+            ========================================== */
         html {
             scroll-behavior: smooth;
         }
@@ -50,6 +50,34 @@
             z-index: 2 !important;
             padding: 20px !important;
             max-width: 800px !important;
+        }
+
+        /* ABOUT SECTION CENTER ALIGNMENT FIX */
+        section.about-section {
+            text-align: center !important;
+            padding: 90px 20px !important;
+        }
+
+        .about-content {
+            max-width: 800px !important;
+            margin: 0 auto !important;
+            text-align: center !important;
+        }
+
+        .about-content .section-label {
+            text-align: center !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+        }
+
+        .about-content h2 {
+            text-align: center !important;
+        }
+
+        .about-content p {
+            text-align: center !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
         }
 
         /* MOBILE RESPONSIVE FIX */
@@ -168,25 +196,25 @@
 
 
     <!-- =========================
-         OUR SERVICES SECTION
+         OUR SERVICES CATEGORIES SECTION
     ========================== -->
 
     <section class="services-section" id="services">
-        <div class="section-heading">
+        <div class="section-heading" style="text-align: center; max-width: 800px; margin: 0 auto 50px auto;">
             <p class="section-label">WHAT WE OFFER</p>
             <h2>Our Exclusive Services</h2>
-            <p>Tailored event planning and decoration solutions to make your special day stress-free.</p>
+            <p>Choose your occasion to explore our tailored decoration and planning packages.</p>
         </div>
 
-        <!-- DYNAMIC SERVICES GRID (FIXED ID CONFLICT) -->
-        <div class="services-container" id="homeServicesContainer">
-            <div class="services-loading">Loading services...</div>
+        <!-- DYNAMIC SERVICE CATEGORIES LIST -->
+        <div id="homeServicesContainer" style="text-align: center;">
+            <div style="color: var(--muted, #a49c91); text-align: center; padding: 20px;">Loading service categories...</div>
         </div>
     </section>
 
 
     <!-- =========================
-         ABOUT
+         ABOUT (CENTERED)
     ========================== -->
 
     <section class="about-section" id="about">
@@ -384,13 +412,63 @@
 
     </footer>
 
-
     <!-- =========================
-         SUPABASE HOME PAGE SCRIPT
+         SCRIPTS (MAIN SCRIPT & HOME SERVICES LOADER)
     ========================== -->
+    <script type="module" src="js/script.js"></script>
 
-    <script type="module" src="./js/script.js"></script>
+    <script type="module">
+        import { supabase } from "./js/supabase.js";
+
+        async function loadHomeServices() {
+            const container = document.getElementById("homeServicesContainer");
+            if (!container) return;
+
+            const { data: categories, error } = await supabase
+                .from("service_categories")
+                .select("*")
+                .order("created_at", { ascending: false });
+
+            if (error || !categories || categories.length === 0) {
+                container.innerHTML = `<div style="color: var(--muted, #a49c91); text-align: center;">No service categories available right now.</div>`;
+                return;
+            }
+
+            container.innerHTML = "";
+
+            const listWrapper = document.createElement("div");
+            listWrapper.style.cssText = "display: flex; flex-direction: column; align-items: center; gap: 20px; max-width: 700px; margin: 0 auto; text-align: center;";
+
+            categories.forEach(cat => {
+                const link = document.createElement("a");
+                link.href = `pages/packages.html?category=${cat.slug}`;
+                
+                link.className = "service-text-item";
+                link.style.cssText = "font-size: 24px; color: #ffffff; text-decoration: none; transition: all 0.3s ease; display: inline-block;";
+
+                link.onmouseover = () => {
+                    link.style.color = "#d4af37";
+                    link.style.transform = "translateX(12px)";
+                    link.style.fontWeight = "600";
+                    link.style.textShadow = "0 0 20px rgba(212, 175, 55, 0.5)";
+                };
+
+                link.onmouseout = () => {
+                    link.style.color = "#ffffff";
+                    link.style.transform = "translateX(0px)";
+                    link.style.fontWeight = "400";
+                    link.style.textShadow = "none";
+                };
+
+                link.textContent = cat.name;
+                listWrapper.appendChild(link);
+            });
+
+            container.appendChild(listWrapper);
+        }
+
+        loadHomeServices();
+    </script>
 
 </body>
-
 </html>

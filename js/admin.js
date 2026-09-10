@@ -35,20 +35,6 @@ const heroPhotoInput = document.getElementById("heroPhotoInput");
 const uploadHeroPhotoBtn = document.getElementById("uploadHeroPhotoBtn");
 const heroPhotoMessage = document.getElementById("heroPhotoMessage");
 
-// Category Elements
-const categoryNameInput = document.getElementById("categoryName");
-const addCategoryBtn = document.getElementById("addCategoryBtn");
-const categoryMessage = document.getElementById("categoryMessage");
-const categoryList = document.getElementById("categoryList");
-const categorySelect = document.getElementById("categorySelect");
-
-// Media Upload Elements
-const categoryPhotos = document.getElementById("categoryPhotos");
-const categoryVideos = document.getElementById("categoryVideos");
-const uploadCategoryMediaBtn = document.getElementById("uploadCategoryMediaBtn");
-const categoryUploadMessage = document.getElementById("categoryUploadMessage");
-const categoryMediaList = document.getElementById("categoryMediaList");
-
 let currentSelectedEvent = null;
 
 // ======================================================
@@ -70,7 +56,7 @@ if (logoutBtn) {
 }
 
 // ======================================================
-// LOAD DROPDOWN & AUTO-SELECT
+// LOAD DROPDOWN & AUTO-SELECT (EVENTS)
 // ======================================================
 async function loadEventDropdown() {
     if (!eventSelect) return;
@@ -101,9 +87,6 @@ async function loadEventDropdown() {
 }
 loadEventDropdown();
 
-// ======================================================
-// LOAD EVENT DETAILS FUNCTION
-// ======================================================
 async function loadSelectedEventDetails(eventId) {
     if (!eventId) {
         if (eventManagementPanel) eventManagementPanel.style.display = "none";
@@ -130,7 +113,6 @@ async function loadSelectedEventDetails(eventId) {
     if (editBudget) editBudget.value = evt.budget || "";
     if (editShowBudget) editShowBudget.checked = !!evt.show_budget;
 
-    // Cover Image Preview Setup
     if (editCoverPreview) {
         if (evt.cover_image_url) {
             editCoverPreview.innerHTML = `<img src="${evt.cover_image_url}" style="max-height: 120px; border-radius: 6px; border: 1px solid #ddd; margin-top: 5px;">`;
@@ -141,8 +123,6 @@ async function loadSelectedEventDetails(eventId) {
 
     if (eventStatus) eventStatus.textContent = `Status: ${evt.published ? "🟢 Published" : "🔴 Draft"}`;
     if (eventManagementPanel) eventManagementPanel.style.display = "block";
-
-    loadCategoriesForEvent(evt.id);
 }
 
 if (eventSelect) {
@@ -151,9 +131,7 @@ if (eventSelect) {
     });
 }
 
-// ======================================================
 // CREATE EVENT
-// ======================================================
 if (eventForm) {
     eventForm.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -166,7 +144,7 @@ if (eventForm) {
         const budget = document.getElementById("budget").value;
         const showBudget = document.getElementById("showBudget").checked;
 
-        const { data, error } = await supabase.from("events").insert([
+        const { error } = await supabase.from("events").insert([
             {
                 event_name: eventName,
                 event_date: eventDate,
@@ -176,7 +154,7 @@ if (eventForm) {
                 show_budget: showBudget,
                 published: false
             }
-        ]).select();
+        ]);
 
         if (error) {
             message.textContent = "Error: " + error.message;
@@ -188,9 +166,7 @@ if (eventForm) {
     });
 }
 
-// ======================================================
-// SAVE / PUBLISH / UNPUBLISH / DELETE
-// ======================================================
+// SAVE / PUBLISH / UNPUBLISH / DELETE EVENT
 if (saveEventBtn) {
     saveEventBtn.addEventListener("click", async () => {
         if (!currentSelectedEvent) return;
@@ -198,7 +174,6 @@ if (saveEventBtn) {
 
         let coverUrl = currentSelectedEvent.cover_image_url || null;
 
-        // Cover Photo Upload Logic
         if (editEventCoverInput && editEventCoverInput.files.length > 0) {
             const file = editEventCoverInput.files[0];
             const fileExt = file.name.split('.').pop();
@@ -214,8 +189,6 @@ if (saveEventBtn) {
                     .from("event-media")
                     .getPublicUrl(filePath);
                 coverUrl = urlData.publicUrl;
-            } else {
-                console.error("Cover Upload Error:", uploadErr);
             }
         }
 
@@ -305,257 +278,276 @@ if (uploadHeroPhotoBtn) {
                 .from("event-media")
                 .getPublicUrl(filePath);
 
-            const newHeroUrl = urlData.publicUrl;
-
             const { error: dbError } = await supabase
                 .from("site_settings")
-                .upsert({ key: "hero_image_url", value: newHeroUrl }, { onConflict: "key" });
+                .upsert({ key: "hero_image_url", value: urlData.publicUrl }, { onConflict: "key" });
 
             if (dbError) throw dbError;
 
             if (heroPhotoMessage) heroPhotoMessage.textContent = "Hero photo updated successfully! ✅";
             if (heroPhotoInput) heroPhotoInput.value = "";
-
         } catch (err) {
-            console.error("Hero Upload Error:", err);
             if (heroPhotoMessage) heroPhotoMessage.textContent = "Hero photo upload failed: " + err.message;
         }
     });
 }
 
 // ======================================================
-// CATEGORIES & MEDIA
+// INDEPENDENT SERVICE CATEGORIES MANAGEMENT
 // ======================================================
-async function loadCategoriesForEvent(eventId) {
-    const { data: categories, error } = await supabase.from("event_categories").select("*").eq("event_id", eventId);
+const addServiceCategoryForm = document.getElementById("addServiceCategoryForm");
+const adminServiceCatsList = document.getElementById("adminServiceCatsList");
 
-    if (error) return;
+async function loadAdminServiceCategories() {
+    if (!adminServiceCatsList) return;
 
-    if (categoryList) categoryList.innerHTML = "";
-    if (categorySelect) categorySelect.innerHTML = `<option value="">-- Select Category --</option>`;
-
-    categories.forEach(cat => {
-        if (categoryList) {
-            const item = document.createElement("div");
-            item.className = "category-item";
-            item.innerHTML = `
-                <span>${cat.category_name}</span>
-                <button class="delete-category-btn" data-id="${cat.id}">Delete</button>
-            `;
-            categoryList.appendChild(item);
-        }
-
-        if (categorySelect) {
-            const opt = document.createElement("option");
-            opt.value = cat.id;
-            opt.textContent = cat.category_name;
-            categorySelect.appendChild(opt);
-        }
-    });
-
-    if (categories.length > 0 && categorySelect) {
-        categorySelect.value = categories[0].id;
-        loadCategoryMedia(categories[0].id);
-    }
-
-    document.querySelectorAll(".delete-category-btn").forEach(btn => {
-        btn.addEventListener("click", async (e) => {
-            const catId = e.target.getAttribute("data-id");
-            if (confirm("Delete this category?")) {
-                await supabase.from("event_categories").delete().eq("id", catId);
-                loadCategoriesForEvent(eventId);
-            }
-        });
-    });
-}
-
-if (addCategoryBtn) {
-    addCategoryBtn.addEventListener("click", async () => {
-        if (!currentSelectedEvent) {
-            if (categoryMessage) categoryMessage.textContent = "Please select an event first.";
-            return;
-        }
-        const name = categoryNameInput.value.trim();
-        if (!name) return;
-
-        const { error } = await supabase.from("event_categories").insert([
-            { event_id: currentSelectedEvent.id, category_name: name }
-        ]);
-
-        if (!error) {
-            categoryNameInput.value = "";
-            loadCategoriesForEvent(currentSelectedEvent.id);
-        }
-    });
-}
-
-if (categorySelect) {
-    categorySelect.addEventListener("change", () => {
-        loadCategoryMedia(categorySelect.value);
-    });
-}
-
-if (uploadCategoryMediaBtn) {
-    uploadCategoryMediaBtn.addEventListener("click", async () => {
-        const categoryId = categorySelect.value;
-        if (!categoryId || !currentSelectedEvent) {
-            categoryUploadMessage.textContent = "Select Category first.";
-            return;
-        }
-
-        const photos = categoryPhotos ? Array.from(categoryPhotos.files) : [];
-        const videos = categoryVideos ? Array.from(categoryVideos.files) : [];
-
-        if (photos.length === 0 && videos.length === 0) {
-            categoryUploadMessage.textContent = "Select at least one photo or video.";
-            return;
-        }
-
-        categoryUploadMessage.textContent = "Uploading media...";
-
-        try {
-            for (const file of photos) {
-                const filePath = `events/${currentSelectedEvent.id}/${Date.now()}_${file.name}`;
-                await supabase.storage.from("event-media").upload(filePath, file);
-                const { data: urlData } = supabase.storage.from("event-media").getPublicUrl(filePath);
-
-                await supabase.from("event_media").insert([
-                    { event_id: currentSelectedEvent.id, category_id: categoryId, media_type: "photo", file_url: urlData.publicUrl }
-                ]);
-            }
-
-            for (const file of videos) {
-                const filePath = `events/${currentSelectedEvent.id}/${Date.now()}_${file.name}`;
-                await supabase.storage.from("event-media").upload(filePath, file);
-                const { data: urlData } = supabase.storage.from("event-media").getPublicUrl(filePath);
-
-                await supabase.from("event_media").insert([
-                    { event_id: currentSelectedEvent.id, category_id: categoryId, media_type: "video", file_url: urlData.publicUrl }
-                ]);
-            }
-
-            categoryUploadMessage.textContent = "Uploaded successfully! ✅";
-            if (categoryPhotos) categoryPhotos.value = "";
-            if (categoryVideos) categoryVideos.value = "";
-            loadCategoryMedia(categoryId);
-        } catch (err) {
-            categoryUploadMessage.textContent = "Error: " + err.message;
-        }
-    });
-}
-
-async function loadCategoryMedia(categoryId) {
-    if (!categoryId || !categoryMediaList) return;
-
-    categoryMediaList.innerHTML = "Loading media...";
-
-    const { data: mediaItems, error } = await supabase
-        .from("event_media")
-        .select("*")
-        .eq("category_id", categoryId);
-
-    if (error || !mediaItems || mediaItems.length === 0) {
-        categoryMediaList.innerHTML = `<div class="no-media">No uploaded media found for this category.</div>`;
-        return;
-    }
-
-    categoryMediaList.innerHTML = "";
-
-    mediaItems.forEach(item => {
-        const card = document.createElement("div");
-        card.className = "admin-media-card";
-
-        if (item.media_type === "photo" || item.media_type === "image") {
-            card.innerHTML = `
-                <img src="${item.file_url}" alt="Media">
-                <div class="admin-media-info">
-                    <button class="delete-media-btn" data-id="${item.id}">Delete Photo</button>
-                </div>
-            `;
-        } else {
-            card.innerHTML = `
-                <video src="${item.file_url}" controls></video>
-                <div class="admin-media-info">
-                    <button class="delete-media-btn" data-id="${item.id}">Delete Video</button>
-                </div>
-            `;
-        }
-        categoryMediaList.appendChild(card);
-    });
-
-    document.querySelectorAll(".delete-media-btn").forEach(btn => {
-        btn.addEventListener("click", async (e) => {
-            const mediaId = e.target.getAttribute("data-id");
-            if (confirm("Delete this media?")) {
-                await supabase.from("event_media").delete().eq("id", mediaId);
-                loadCategoryMedia(categoryId);
-            }
-        });
-    });
-} 
-// ADD & MANAGE SERVICES IN ADMIN DASHBOARD
-const addServiceForm = document.getElementById("addServiceForm");
-const adminServicesList = document.getElementById("adminServicesList");
-
-async function loadAdminServices() {
-    if (!adminServicesList) return;
-
-    const { data: services, error } = await supabase
-        .from("services")
+    const { data: categories, error } = await supabase
+        .from("service_categories")
         .select("*")
         .order("created_at", { ascending: true });
 
     if (error) {
-        adminServicesList.innerHTML = `<div style="color:red;">Error loading services</div>`;
+        console.error("Error loading service categories:", error);
         return;
     }
 
-    if (!services || services.length === 0) {
-        adminServicesList.innerHTML = `<div style="color:#a0a0a0;">No services added yet.</div>`;
+    adminServiceCatsList.innerHTML = "";
+    if (!categories || categories.length === 0) {
+        adminServiceCatsList.innerHTML = `<div style="color: #a0a0a0; font-size: 13px;">No service categories created yet.</div>`;
         return;
     }
 
-    adminServicesList.innerHTML = "";
-    services.forEach(s => {
+    categories.forEach(cat => {
         const item = document.createElement("div");
-        item.style.cssText = `display: flex; justify-content: space-between; align-items: center; background: #121212; padding: 12px 18px; border-radius: 8px; border: 1px solid #2a2a2a;`;
+        item.style.cssText = "display: flex; justify-content: space-between; align-items: center; background: #121212; padding: 10px 15px; border-radius: 6px; border: 1px solid #2a2a2a; color:#fff; margin-bottom: 8px;";
         item.innerHTML = `
             <div>
-                <strong style="color: #c5a059;">${s.icon || "✨"} ${s.title}</strong>
-                <p style="margin: 4px 0 0; font-size: 13px; color: #a0a0a0;">${s.description || ""}</p>
+                <strong style="color: #c5a059;">${cat.icon || "✨"} ${cat.name}</strong> 
+                <span style="color: #888; font-size: 12px; margin-left: 10px;">(slug: ${cat.slug})</span>
             </div>
-            <button onclick="deleteService('${s.id}')" style="background: #ff4d4d; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">Delete</button>
+            <button onclick="deleteServiceCategory('${cat.id}')" style="background: #ff4d4d; color: #fff; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">Delete</button>
         `;
-        adminServicesList.appendChild(item);
+        adminServiceCatsList.appendChild(item);
     });
 }
 
-addServiceForm?.addEventListener("submit", async (e) => {
+addServiceCategoryForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const title = document.getElementById("serviceTitle").value;
-    const icon = document.getElementById("serviceIcon").value || "✨";
-    const description = document.getElementById("serviceDescription").value;
+    const name = document.getElementById("catName").value.trim();
+    const slug = document.getElementById("catSlug").value.trim().toLowerCase().replace(/\s+/g, '-');
+    const icon = document.getElementById("catIcon").value.trim() || "✨";
+    const description = document.getElementById("catDesc").value.trim();
+    const catImageFile = document.getElementById("catImageFile");
+    const catBgFile = document.getElementById("catBgFile"); // Category Background Image
 
-    const { error } = await supabase.from("services").insert([{ title, icon, description }]);
+    let imageUrl = "";
+    if (catImageFile && catImageFile.files && catImageFile.files[0]) {
+        const file = catImageFile.files[0];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `cat_${slug}_${Date.now()}.${fileExt}`;
+        const filePath = `categories/${fileName}`;
+
+        const { error: uploadErr } = await supabase.storage
+            .from("event-media")
+            .upload(filePath, file, { cacheControl: '0', upsert: true });
+
+        if (!uploadErr) {
+            const { data: urlData } = supabase.storage
+                .from("event-media")
+                .getPublicUrl(filePath);
+            imageUrl = urlData.publicUrl;
+        } else {
+            alert("Banner image upload failed: " + uploadErr.message);
+            return;
+        }
+    }
+
+    let bgImageUrl = "";
+    if (catBgFile && catBgFile.files && catBgFile.files[0]) {
+        const file = catBgFile.files[0];
+        const fileExt = file.name.split('.').pop();
+        const fileName = `cat_bg_${slug}_${Date.now()}.${fileExt}`;
+        const filePath = `categories/${fileName}`;
+
+        const { error: uploadErr } = await supabase.storage
+            .from("event-media")
+            .upload(filePath, file, { cacheControl: '0', upsert: true });
+
+        if (!uploadErr) {
+            const { data: urlData } = supabase.storage
+                .from("event-media")
+                .getPublicUrl(filePath);
+            bgImageUrl = urlData.publicUrl;
+        } else {
+            alert("Background image upload failed: " + uploadErr.message);
+            return;
+        }
+    }
+
+    if (!name || !slug) return;
+
+    const { error } = await supabase
+        .from("service_categories")
+        .insert([{ name, slug, icon, description, image_url: imageUrl, bg_image: bgImageUrl }]);
 
     if (error) {
-        alert("Failed to add service: " + error.message);
+        alert("Failed to add category: " + error.message);
     } else {
-        addServiceForm.reset();
-        loadAdminServices();
+        alert("Category added successfully with images! ✅");
+        addServiceCategoryForm.reset();
+        document.getElementById("catIcon").value = "✨";
+        loadAdminServiceCategories();
+        loadAdminPackageDropdowns();
     }
 });
 
-window.deleteService = async (id) => {
-    if (confirm("Are you sure you want to delete this service?")) {
-        const { error } = await supabase.from("services").delete().eq("id", id);
+window.deleteServiceCategory = async (id) => {
+    if (confirm("Are you sure you want to delete this service category?")) {
+        const { error } = await supabase
+            .from("service_categories")
+            .delete()
+            .eq("id", id);
+
         if (error) {
             alert("Delete failed: " + error.message);
         } else {
-            loadAdminServices();
+            loadAdminServiceCategories();
+            loadAdminPackageDropdowns();
         }
     }
 };
 
-// Initial Load
-loadAdminServices();
+// ======================================================
+// LOAD CATEGORIES & PACKAGES INTO ADMIN DROPDOWNS
+// ======================================================
+async function loadAdminPackageDropdowns() {
+    const categorySelect = document.getElementById("pkgCategorySlug");
+    const packageSelect = document.getElementById("pkgSelectDropdown");
+
+    if (categorySelect) {
+        const { data: categories, error } = await supabase
+            .from("service_categories")
+            .select("slug, name")
+            .order("created_at", { ascending: false });
+
+        if (!error && categories) {
+            categorySelect.innerHTML = `<option value="">-- Select Category --</option>`;
+            categories.forEach(cat => {
+                categorySelect.innerHTML += `<option value="${cat.slug}">${cat.name}</option>`;
+            });
+        }
+    }
+
+    if (packageSelect) {
+        const { data: packages, error } = await supabase
+            .from("packages")
+            .select("id, package_name, category_slug")
+            .order("created_at", { ascending: false });
+
+        if (!error && packages) {
+            packageSelect.innerHTML = `<option value="">-- Select Package --</option>`;
+            packages.forEach(pkg => {
+                packageSelect.innerHTML += `<option value="${pkg.id}">${pkg.package_name} (${pkg.category_slug})</option>`;
+            });
+        }
+    }
+}
+
+// ======================================================
+// HANDLE ADD PACKAGE FORM SUBMISSION
+// ======================================================
+const addPackageForm = document.getElementById("addPackageForm");
+if (addPackageForm) {
+    addPackageForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const category_slug = document.getElementById("pkgCategorySlug").value;
+        const package_name = document.getElementById("pkgName").value;
+        const description = document.getElementById("pkgDesc").value;
+        const pkgImageFile = document.getElementById("pkgImageFile");
+        const pkgBgFile = document.getElementById("pkgBgFile"); // Package Background Image
+
+        let imageUrl = "";
+        if (pkgImageFile && pkgImageFile.files && pkgImageFile.files[0]) {
+            const file = pkgImageFile.files[0];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `pkg_${Date.now()}.${fileExt}`;
+            const filePath = `packages/${fileName}`;
+
+            const { error: uploadErr } = await supabase.storage
+                .from("event-media")
+                .upload(filePath, file, { cacheControl: '0', upsert: true });
+
+            if (!uploadErr) {
+                const { data: urlData } = supabase.storage
+                    .from("event-media")
+                    .getPublicUrl(filePath);
+                imageUrl = urlData.publicUrl;
+            } else {
+                alert("Cover image upload failed: " + uploadErr.message);
+                return;
+            }
+        }
+
+        let bgImageUrl = "";
+        if (pkgBgFile && pkgBgFile.files && pkgBgFile.files[0]) {
+            const file = pkgBgFile.files[0];
+            const fileExt = file.name.split('.').pop();
+            const fileName = `pkg_bg_${Date.now()}.${fileExt}`;
+            const filePath = `packages/${fileName}`;
+
+            const { error: uploadErr } = await supabase.storage
+                .from("event-media")
+                .upload(filePath, file, { cacheControl: '0', upsert: true });
+
+            if (!uploadErr) {
+                const { data: urlData } = supabase.storage
+                    .from("event-media")
+                    .getPublicUrl(filePath);
+                bgImageUrl = urlData.publicUrl;
+            } else {
+                alert("Background image upload failed: " + uploadErr.message);
+                return;
+            }
+        }
+
+        const { error } = await supabase
+            .from("packages")
+            .insert([{ category_slug, package_name, description, image_url: imageUrl, bg_image: bgImageUrl }]);
+
+        if (error) {
+            alert("Error adding package: " + error.message);
+        } else {
+            alert("Package added successfully with images! ✅");
+            addPackageForm.reset();
+            loadAdminPackageDropdowns();
+        }
+    });
+}
+
+// ======================================================
+// HANDLE ADD PACKAGE SERVICE / CHECKLIST ITEM FORM
+// ======================================================
+const addPkgServiceForm = document.getElementById("addPkgServiceForm");
+if (addPkgServiceForm) {
+    addPkgServiceForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const package_id = document.getElementById("pkgSelectDropdown").value;
+        const title = document.getElementById("pkgServiceTitle").value;
+        const icon = document.getElementById("pkgServiceIcon").value || "✨";
+
+        const { error } = await supabase
+            .from("package_services")
+            .insert([{ package_id, title, icon }]);
+
+        if (error) {
+            alert("Error adding service item: " + error.message);
+        } else {
+            alert("Service checklist item added successfully! ✅");
+            addPkgServiceForm.reset();
+        }
+    });
+}
+
+// Initial Loads
+loadAdminServiceCategories();
+loadAdminPackageDropdowns();

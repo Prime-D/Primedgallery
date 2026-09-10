@@ -8,22 +8,17 @@ const paginationContainer = document.getElementById("paginationContainer");
 let currentPage = 1;
 const itemsPerPage = 6;
 
+// ======================================================
+// 1. FAST & STABLE PUBLISHED EVENTS LOADER
+// ======================================================
 async function loadPublishedEvents(page = 1) {
     if (!eventsContainer) return;
 
-    // Skeleton / Smooth Loader
     eventsContainer.innerHTML = `<div class="events-loading" style="color:var(--muted); text-align:center; grid-column:1/-1; padding: 40px;">Loading Prime-D Experience...</div>`;
 
-    // Single Query Join to Fetch Events + Cover Image Fast
     const { data: allEvents, error } = await supabase
         .from("events")
-        .select(`
-            *,
-            event_media (
-                file_url,
-                media_type
-            )
-        `)
+        .select("*")
         .eq("published", true)
         .order("created_at", { ascending: false });
 
@@ -50,14 +45,8 @@ async function loadPublishedEvents(page = 1) {
         const card = document.createElement("article");
         card.className = "event-card";
 
-        // Extract Cover Image directly from cover_image_url OR Event Media
-        let coverUrl = event.cover_image_url || "images/hero.jpg";
-        if (!event.cover_image_url && event.event_media && event.event_media.length > 0) {
-            const firstPhoto = event.event_media.find(m => m.media_type === "image" || m.media_type === "photo");
-            if (firstPhoto && firstPhoto.file_url) {
-                coverUrl = firstPhoto.file_url;
-            }
-        }
+        // Fallback cover image
+        const coverUrl = event.cover_image_url || "images/hero.jpg";
 
         const imageWrapper = document.createElement("div");
         imageWrapper.className = "event-image";
@@ -171,7 +160,10 @@ function formatBudget(amount) {
 
 loadPublishedEvents(currentPage);
 
-// Dynamic Hero Photo Loading (Mobile & PC Multi-device Fix)
+
+// ======================================================
+// 2. DYNAMIC HERO PHOTO LOADER
+// ======================================================
 async function applyDynamicHeroImage() {
     try {
         const heroSection = document.querySelector(".hero");
@@ -190,7 +182,6 @@ async function applyDynamicHeroImage() {
 
         if (data && data.value) {
             const freshUrl = data.value;
-            
             heroSection.style.setProperty(
                 "background-image", 
                 `linear-gradient(135deg, rgba(28, 26, 23, 0.40) 25%, rgba(28, 26, 23, 0.65)), url('${freshUrl}')`, 
@@ -207,84 +198,48 @@ async function applyDynamicHeroImage() {
 
 applyDynamicHeroImage();
 
-// FETCH AND RENDER SERVICES ON HOME PAGE (LUXURY EDITORIAL STYLE)
+
+// ======================================================
+// 3. INDEPENDENT SERVICE CATEGORIES TEXT LIST LOADER
+// ======================================================
 async function loadHomeServices() {
     const servicesContainer = document.getElementById("homeServicesContainer");
     if (!servicesContainer) return;
 
-    const { data: services, error } = await supabase
-        .from("services")
+    const { data: categories, error } = await supabase
+        .from("service_categories")
         .select("*")
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false });
 
-    // Default Luxury Checklist Services if DB is empty
-    const defaultServices = [
-        {
-            icon: "🎪",
-            title: "Full Decor & Setup",
-            items: [
-                "Backdrop & draping",
-                "Floral arrangements",
-                "Stage and table styling",
-                "Entrance décor",
-                "Welcome sign / name board",
-                "Candles, lanterns & lighting"
-            ],
-            note: "Customizable to match your unique theme, venue, and vision."
-        },
-        {
-            icon: "✨",
-            title: "Guest & Dining Experience",
-            items: [
-                "Guest table styling",
-                "Cake table styling",
-                "Seating & lounge setup",
-                "Setup & dismantling",
-                "On-site coordination support"
-            ],
-            note: "We handle every single detail so you can enjoy your special day stress-free."
-        }
-    ];
+    if (error) {
+        console.error("Error loading categories:", error);
+        servicesContainer.innerHTML = `<div style="color: var(--muted, #a49c91); text-align: center;">Error loading categories: ${error.message}</div>`;
+        return;
+    }
 
-    const displayList = (services && services.length > 0) ? services : defaultServices;
+    if (!categories || categories.length === 0) {
+        servicesContainer.innerHTML = `<div style="color: var(--muted, #a49c91); text-align: center;">No service categories available right now.</div>`;
+        return;
+    }
 
     servicesContainer.innerHTML = "";
 
-    displayList.forEach((service) => {
-        const card = document.createElement("div");
-        card.className = "service-card";
+    const listWrapper = document.createElement("div");
+    listWrapper.style.cssText = "display: flex; flex-direction: column; align-items: center; gap: 20px; max-width: 700px; margin: 0 auto; text-align: center;";
 
-        let itemsHtml = "";
-        if (service.items && Array.isArray(service.items)) {
-            itemsHtml = service.items.map(item => `
-                <li>
-                    <span>${item}</span>
-                    <span class="check-icon">✓</span>
-                </li>
-            `).join("");
-        } else if (service.description) {
-            const lines = service.description.split("\n");
-            itemsHtml = lines.map(line => `
-                <li>
-                    <span>${line}</span>
-                    <span class="check-icon">✓</span>
-                </li>
-            `).join("");
-        }
+    categories.forEach(cat => {
+        const link = document.createElement("a");
+        link.href = `pages/packages.html?category=${cat.slug}`;
+        link.style.cssText = "font-family: 'Cormorant Garamond', Georgia, serif; font-size: 28px; color: #ffffff; text-decoration: none; transition: 0.3s ease; display: inline-block; font-weight: 500;";
+        
+        link.onmouseover = () => { link.style.color = "var(--gold, #d4af37);"; };
+        link.onmouseout = () => { link.style.color = "#ffffff"; };
 
-        card.innerHTML = `
-            <div class="service-header">
-                <span class="service-icon">${service.icon || "✨"}</span>
-                <h3 class="service-title">${service.title}</h3>
-            </div>
-            <ul class="service-item-list">
-                ${itemsHtml}
-            </ul>
-            ${service.note ? `<div class="service-footer-note">✦ ${service.note}</div>` : ""}
-        `;
-
-        servicesContainer.appendChild(card);
+        link.textContent = cat.name;
+        listWrapper.appendChild(link);
     });
+
+    servicesContainer.appendChild(listWrapper);
 }
 
 loadHomeServices();
