@@ -143,7 +143,7 @@ async function initEventDetails() {
         eventBudget.textContent = "💰 Rs. " + Number(event.budget).toLocaleString("en-LK");
     }
 
-    // EVENT HERO BACKGROUND SETTER (WITH NO-REPEAT ENFORCED)
+    // EVENT HERO BACKGROUND SETTER
     if (event.cover_image_url) {
         applyHeroBackground(event.cover_image_url);
     }
@@ -181,20 +181,42 @@ async function loadEventCategories(eventId) {
 }
 
 async function loadEventMedia(eventId) {
-    const { data: media, error } = await supabase
-        .from("event_media")
-        .select("*")
+    // 1. මෙම ඊවන්ට් එකට අදාළ කැටගරි ටික ලබා ගැනීම
+    const { data: categories } = await supabase
+        .from("event_categories")
+        .select("id")
         .eq("event_id", eventId);
 
-    if (error || !media) {
-        if (photosGrid) photosGrid.innerHTML = `<div class="empty-gallery-msg">Failed to load media.</div>`;
-        if (videosGrid) videosGrid.innerHTML = `<div class="empty-gallery-msg">Failed to load media.</div>`;
-        return;
+    const categoryIds = categories ? categories.map(c => c.id) : [];
+
+    // 2. අදාළ කැටගරි වලට හෝ ඊවන්ට් එකට සම්බන්ධ සියලුම මීඩියා ෆෙච් කිරීම
+    let media = [];
+    if (categoryIds.length > 0) {
+        const { data, error } = await supabase
+            .from("event_media")
+            .select("*")
+            .in("category_id", categoryIds);
+        
+        if (!error && data) {
+            media = data;
+        }
+    }
+
+    // මීඩියා හමු නොවී නම් event_id එක මඟින් සෙවීම
+    if (media.length === 0) {
+        const { data, error } = await supabase
+            .from("event_media")
+            .select("*")
+            .eq("event_id", eventId);
+
+        if (!error && data) {
+            media = data;
+        }
     }
 
     allMediaItems = media;
 
-    // Cover Image එකක් සකසා නැති විට Gallery එකේ පළමු Photo එක Hero Background එක ලෙස Auto-Apply කිරීම
+    // Cover Image එකක් නැති විට Gallery එකේ පළමු Photo එක Hero Background එක ලෙස Auto-Apply කිරීම
     const heroSection = document.querySelector(".event-hero");
     if (heroSection && !heroSection.style.backgroundImage && allMediaItems.length > 0) {
         const firstPhoto = allMediaItems.find(m => m.media_type === "photo" || m.media_type === "image");
