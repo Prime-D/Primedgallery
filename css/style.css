@@ -15,7 +15,7 @@
     --gold-light: #e6d3a3;     
     --border: rgba(212, 175, 55, 0.25); 
     --border-light: #e3dbc9;
-    --dark: #11100f;           
+    --dark: #11100f;          
 }
 
 /* GLOBAL RESET & PREVENT OVERFLOW */
@@ -129,7 +129,7 @@ img, video, iframe {
     font-family: 'Cormorant Garamond', Georgia, serif;
     font-size: clamp(45px, 7vw, 85px);
     line-height: 0.98;
-    font-weight: 600 !important; /* අකුරු ඝණ කර ඇත (Bold) */
+    font-weight: 600 !important;
     margin-bottom: 30px;
     color: var(--white);
     text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
@@ -138,8 +138,8 @@ img, video, iframe {
 .hero-description {
     max-width: 600px;
     font-size: 18px;
-    color: #ffffff !important; /* වඩාත් පැහැදිලි වීමට සුදු පැහැයට හැරვიණි */
-    font-weight: 600 !important; /* විස්තරය බොල්ඩ් කර ඇත */
+    color: #ffffff !important;
+    font-weight: 600 !important;
     text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
 }
 
@@ -685,6 +685,9 @@ footer {
         min-height: 550px;
         padding-top: 80px !important;
         padding-bottom: 80px !important;
+        /* ජංගම දුරකථනවලදී පින්තූරය සම්පූර්ණයෙන්ම පෙන්වීමට */
+        background-size: 100% 100% !important;
+        background-position: center center !important;
     }
 }
 
