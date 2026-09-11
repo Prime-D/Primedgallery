@@ -7,7 +7,7 @@
 
     <title>Prime-D | Event Planning & Decorations</title>
 
-    <link rel="stylesheet" href="css/style.css?v=1.7">
+    <link rel="stylesheet" href="css/style.css?v=1.8">
     
     <style>
         /* ==========================================
@@ -79,12 +79,13 @@
             margin-right: auto !important;
         }
 
-        /* MOBILE RESPONSIVE FIX */
+        /* MOBILE RESPONSIVE FIX FOR HERO IMAGE */
         @media (max-width: 768px) {
             section.hero#home {
                 min-height: 65vh !important;
                 padding: 90px 20px 60px !important;
-                background-size: cover !important;
+                /* cover වෙනුවට 100% 100% භාවිත කිරීමෙන් පින්තූරය සම්පූර්ණයෙන්ම තිරයට ගැළපේ */
+                background-size: 100% 100% !important; 
                 background-position: center center !important;
             }
 
