@@ -369,9 +369,22 @@ addServiceCategoryForm?.addEventListener("submit", async (e) => {
 
     if (!name || !slug) return;
 
+    // සේවා කාණ්ඩය ඩේටාබේස් එකට යැවීම (bg_image තිබේ නම් පමණක් එකතු කරයි)
+    const insertData = { 
+        name: name, 
+        slug: slug, 
+        icon: icon, 
+        description: description, 
+        image_url: imageUrl 
+    };
+
+    if (bgImageUrl) {
+        insertData.bg_image = bgImageUrl;
+    }
+
     const { error } = await supabase
         .from("service_categories")
-        .insert([{ name, slug, icon, description, image_url: imageUrl, bg_image: bgImageUrl }]);
+        .insert([insertData]);
 
     if (error) {
         alert("Failed to add category: " + error.message);
@@ -730,24 +743,18 @@ if (uploadCategoryMediaBtn) {
 // 06. MANAGE & DISPLAY EVENT MEDIA (SECTION 06)
 // ======================================================
 const mediaCategorySelect = document.getElementById("categorySelect");
-const manageMediaContainer = document.querySelector("#eventManagementPanel ~ div") || document.getElementById("categoryList"); // හෝ 06 වෙනි සෙක්ෂන් එකට අදාළ ඩිව් එකේ අයිඩී එක
 
 async function loadEventMediaList() {
     const categoryId = mediaCategorySelect ? mediaCategorySelect.value : null;
     
-    // 06 වෙනි සෙක්ෂන් එකේ කන්ටේනර් එක සොයාගැනීම (HTML එකේ ඇති පරිදි id එකක් දෙන්න පුළුවන්, උදා: 'mediaGalleryList')
     let mediaListContainer = document.getElementById("mediaGalleryList");
     
     if (!mediaListContainer) {
-        // එහෙම අයිඩී එකක් නැත්නම් 06 වෙනි සෙක්ෂන් එක යටතට ඩිව් එකක් සාදාගැනීම
-        const section06 = document.querySelector("h2:nth-of-type(6)")?.parentElement || document.body;
-        mediaListContainer = document.createElement("div");
-        mediaListContainer.id = "mediaGalleryList";
-        mediaListContainer.style.cssText = "display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 15px;";
-        
-        // 06 වෙනි සෙක්ෂන් එකේ පවතින ටෙක්ස්ට් එකට පහළින් එය ඇතුළත් කිරීම
         const sec6Title = Array.from(document.querySelectorAll("h2, h3, .section-title, b, strong")).find(el => el.textContent.includes("06. Manage Event Media"));
         if (sec6Title && sec6Title.nextElementSibling) {
+            mediaListContainer = document.createElement("div");
+            mediaListContainer.id = "mediaGalleryList";
+            mediaListContainer.style.cssText = "display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 15px;";
             sec6Title.nextElementSibling.appendChild(mediaListContainer);
         }
     }
@@ -767,6 +774,7 @@ async function loadEventMediaList() {
         return;
     }
 
+    if (!mediaListContainer) return;
     mediaListContainer.innerHTML = "";
     if (!mediaItems || mediaItems.length === 0) {
         mediaListContainer.innerHTML = `<span style="color: #777; font-size: 13px;">No media uploaded for this category yet.</span>`;
@@ -792,12 +800,10 @@ async function loadEventMediaList() {
     });
 }
 
-// ඩ්‍රොප් ඩවුන් එක වෙනස් කළ විට මීඩියා ලෝඩ් වීම
 if (mediaCategorySelect) {
     mediaCategorySelect.addEventListener("change", loadEventMediaList);
 }
 
-// මීඩියා අයිතමයක් මැකීමට (Delete) ෆන්ෂන් එකක්
 window.deleteMediaItem = async (mediaId) => {
     if (confirm("Are you sure you want to delete this media item?")) {
         const { error } = await supabase
@@ -813,5 +819,4 @@ window.deleteMediaItem = async (mediaId) => {
     }
 };
 
-// මුල් වරට පේජ් එක ලෝඩ් වන විට සහ අප්ලෝඩ් වූ පසු කෝල් කිරීමට
 loadEventMediaList();
